@@ -1,3 +1,8 @@
+/*
+ * @author sciloop / https://github.com/sciloop
+ * @thread http://maya.germanmentalray.org/viewtopic.php?f=33&t=87
+*/
+
 global proc sciToggleViewportRenderer()
 {
    string $currentPanel = getPanel( "-withFocus" );
