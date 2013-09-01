@@ -1,5 +1,5 @@
 /*
- * Add The attribute "collsionGeometryIndex" to the particle and use this expression
+ * Add the attribute "collsionGeometryIndex" to the particle and use this expression
  * @author schwungsau
  * @thread http://maya.germanmentalray.org/viewtopic.php?f=51&t=57
 */
@@ -13,7 +13,7 @@ if( $idx != -1 )
 {
 
 string $geoC[] = `listConnections particleShape2.collisionGeometry[$idx]`;
-string $shape[] = `listConnections ( $geoC[0] + “.localGeometry” )`;
-print( $shape[0] + “\n”);
-if ($shape[0] == “killcube”) particleShape2.lifespanPP = 0;
+string $shape[] = `listConnections ( $geoC[0] + ï¿½.localGeometryï¿½ )`;
+print( $shape[0] + ï¿½\nï¿½);
+if ($shape[0] == ï¿½killcubeï¿½) particleShape2.lifespanPP = 0;
 }
