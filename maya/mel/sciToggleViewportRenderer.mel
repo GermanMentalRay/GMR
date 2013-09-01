@@ -31,5 +31,3 @@ global proc sciToggleViewportRenderer()
    {setRendererInModelPanel( "base_OpenGL_Renderer", $currentPanel );}
 
 }
-
-//______________________________________________________________________
