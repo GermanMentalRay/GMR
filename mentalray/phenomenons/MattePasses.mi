@@ -295,12 +295,5 @@ shader "store_elements" "max_mrStoreElements" (
 		     }			
 				
         control "mode" "null" ("uiName" "Mode", "value" 0, "hidden")
-		
-		
-		
-		
-		
     }
- end declare
- 
- 
+end declare
