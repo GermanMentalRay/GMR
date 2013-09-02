@@ -1,0 +1,138 @@
+# @author https://github.com/jb-alvarado
+# thread http://germanmentalray.de/viewtopic.php?f=16&t=1758
+
+declare phenomenon
+	material "PassContainer"
+	(
+		material "material",
+		
+		color texture	"bump_map",
+		scalar			"bump_multiplier",
+	
+		boolean		"enable_Passes",
+		
+		color		"pass_shader_1",
+		string		"label_pass_1",
+		color		"pass_shader_2",
+		string		"label_pass_2",
+		color		"pass_shader_3",
+		string		"label_pass_3",
+		color		"pass_shader_4",
+		string		"label_pass_4",
+		color		"pass_shader_5",
+		string		"label_pass_5"		
+	)	
+	
+	#------------------------------------------------------------
+	# Main Material
+	#------------------------------------------------------------
+
+    shader "mat_to_shader" "max_MaterialToShader" 
+    (
+        "material" = interface "material"
+    )	
+	
+	shader "bumpshader" "max_Bump" (
+        "Multiplier" = interface "bump_multiplier",
+        "Map"        = interface "bump_map"
+    )
+    
+	#------------------------------------------------------------
+	# User Passes
+	#------------------------------------------------------------
+	
+	shader	"store_element_1" "max_mrStoreElement" (
+		"input"		= interface "pass_shader_1",
+		"label" 	= interface "label_pass_1" 
+	)
+	
+	shader	"store_element_2" "max_mrStoreElement" (
+		"input"		= interface "pass_shader_2",
+		"label" 	= interface "label_pass_2" 
+	)
+	
+	shader	"store_element_3" "max_mrStoreElement" (
+		"input"		= interface "pass_shader_3",
+		"label" 	= interface "label_pass_3" 
+	)
+	
+	shader	"store_element_4" "max_mrStoreElement" (
+		"input"		= interface "pass_shader_4",
+		"label" 	= interface "label_pass_4" 
+	)
+	
+	shader	"store_element_5" "max_mrStoreElement" (
+		"input"		= interface "pass_shader_5",
+		"label" 	= interface "label_pass_5" 
+	)
+	
+	#----------------------------------------------------------
+	# Mixer Dummy
+	#----------------------------------------------------------
+	
+	
+	shader "mixer" "mib_color_mix" (
+	"num" 6, 
+	"weight_0" 0, 
+	"weight_1" 0, 
+	"weight_2" 0, 
+	"weight_3" 0, 
+	"weight_4" 0, 
+	"weight_5" 1,
+	"color_0"  = "store_element_1", 
+	"color_1"  = "store_element_2", 
+	"color_2"  = "store_element_3", 
+	"color_3"  = "store_element_4", 
+	"color_4"  = "store_element_5",
+	"color_5"  = "mat_to_shader" 
+	)
+	
+	shader "store_elements" "max_mrStoreElements" (
+		"main_input"  = "mixer", 
+		"main_label" "buffermaindb", 
+		"apply_render_elements" = interface "enable_Passes"
+	
+	)
+	
+	
+	
+	material "matc" opaque
+			= "bumpshader"	 = "store_elements"
+		shadow   = "mat_to_shader"
+		photon	 = "mat_to_shader"
+		displace = "mat_to_shader"
+	end material
+	root material "matc"
+	
+	
+	 gui "gui_PassContainer" {
+        control "Global"  "Global" (
+            "uiName"      "Pass Material Container"
+        )
+		
+			control "material"  "material" 				("uiName" "Main Material")
+
+			control "bump_map" 	"vector texture" 		("uiName" "Bump Map", "textureInfo" "max_texmap")
+			control "bump_multiplier" 	"float" 		("uiName" "Bump Multiplier", "value" .3 )
+			
+			control "enable_Passes" "boolean" 			("uiName" "Enable Multiple Outputs","value"   0,"nonConnectable" )
+			control "pass_shader_1" "color"				("uiName" "Pass 1 Color" )
+			control "label_pass_1" "string"				("uiName" "Label 1",  "nonConnectable"  )
+			
+			control "pass_shader_2" "color"				("uiName" "Pass 2 Color" )
+			control "label_pass_2" "string"				("uiName" "Label 2",  "nonConnectable"  )
+			
+			control "pass_shader_3" "color"				("uiName" "Pass 3 Color" )
+			control "label_pass_3" "string"				("uiName" "Label 3",  "nonConnectable"  )
+			
+			control "pass_shader_4" "color"				("uiName" "Pass 4 Color" )
+			control "label_pass_4" "string"				("uiName" "Label 4",  "nonConnectable"  )
+			
+			control "pass_shader_5" "color"				("uiName" "Pass 5 Color" )
+			control "label_pass_5" "string"				("uiName" "Label 5",  "nonConnectable"  )
+		
+
+		}
+	
+
+end declare
