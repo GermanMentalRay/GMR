@@ -9,25 +9,23 @@ global proc sciToggleViewportRenderer()
    string $panelType    = getPanel( "-to", $currentPanel );
    string $mayaVersion  = about( "-v" );
 
-   if( $panelType!="modelPanel" )
-   {return;}
+   if( $panelType!="modelPanel" ) {
+      return;
+   }
 
    string $targetVP2Renderer = "";
 
-   if( $mayaVersion=="2011 x64" ||
-      $mayaVersion=="2012 x64" ||
-      $mayaVersion=="2013 x64" )
-   {$targetVP2Renderer = "ogsRenderer";}
-   else
-   {$targetVP2Renderer = "vp2Renderer";}
+   if( $mayaVersion=="2011 x64" || $mayaVersion=="2012 x64" || $mayaVersion=="2013 x64" ) {
+      $targetVP2Renderer = "ogsRenderer";
+   } else {
+      $targetVP2Renderer = "vp2Renderer";
+   }
 
-   string $renderer = modelEditor(   "-q",
-                           "-rendererName",
-                           $currentPanel );
+   string $renderer = modelEditor( "-q", "-rendererName", $currentPanel );
 
-   if( $renderer=="base_OpenGL_Renderer" )
-   {setRendererInModelPanel( $targetVP2Renderer, $currentPanel );}
-   else if( $renderer==$targetVP2Renderer )
-   {setRendererInModelPanel( "base_OpenGL_Renderer", $currentPanel );}
-
+   if( $renderer=="base_OpenGL_Renderer" ) {
+      setRendererInModelPanel( $targetVP2Renderer, $currentPanel );
+   } else if( $renderer==$targetVP2Renderer ) {
+      setRendererInModelPanel( "base_OpenGL_Renderer", $currentPanel );
+   }
 }
