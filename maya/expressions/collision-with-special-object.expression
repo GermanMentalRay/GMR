@@ -1,6 +1,6 @@
 /*
  * Add the attribute "collsionGeometryIndex" to the particle and use this expression
- * @author schwungsau
+ * @author Heribert Raab (user schwungsau)
  * @thread http://maya.germanmentalray.org/viewtopic.php?f=51&t=57
 */
 
