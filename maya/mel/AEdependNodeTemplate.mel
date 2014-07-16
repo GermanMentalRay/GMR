@@ -37,7 +37,7 @@
 //	None
 //
 // sciloop : reason for modification of original file:
-// add attribute status checks to every dependNode
+// add attribute status checks to every dependNode.
 // You will find for every selected dependNode a separate tab with three
 // buttons : 'display attribute values', 'display connections' and
 // 'display dirty status'.
