@@ -1,0 +1,184 @@
+//
+// creator : sciloop
+//
+// This file is the place for procs which modify
+// the defalut Maya AETemplates.
+//
+// Currently, all files are for the 'AEdependNodeTemplate.mel'
+// Additionally you need the followind procs :
+// 'sciListConnections.mel',
+// 'sciListAttributes.mel',
+// 'sciListDirtyStatus.mel'
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListAttributesCreate( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	separator(	"-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	rowLayout( "-numberOfColumns", 2,
+				"-columnWidth", 2, 120 );
+
+		text( "-label", "" );
+
+		button -label	"display attribute values"
+		  	   -command	("sciListAttributes({\""+$node+"\"});")
+		    	($nodeType+"sciListAttributesButton");
+
+	setParent ..;
+
+	separator(	"-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	AEdependNodeSciListAttributesReplace( $plug );
+}
+
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListAttributesReplace( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	button -edit
+		   -command	("sciListAttributes({\""+$node+"\"});")
+			($nodeType+"sciListAttributesButton");
+}
+
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListDirtyStatusCreate( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	separator( "-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	rowLayout( "-numberOfColumns", 2,
+				"-columnWidth", 2, 120 );
+
+		text( "-label", "" );
+
+		button -label	"display dirty status"
+		  	   -command	("sciListDirtyStatus({\""+$node+"\"});")
+		    	($nodeType+"sciListDirtyStatusButton");
+
+	setParent ..;
+
+	separator(	"-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	AEdependNodeSciListDirtyStatusReplace( $plug );
+
+}
+
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListDirtyStatusReplace( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	button -edit
+		   -command	("sciListDirtyStatus({\""+$node+"\"});")
+			($nodeType+"sciListDirtyStatusButton");
+}
+
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListConnectionsCreate( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	separator( "-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	rowLayout( "-numberOfColumns", 2,
+				"-columnWidth", 2, 120 );
+
+		text( "-label", "" );
+
+		button -label	"display connections"
+		  	   -command	("sciListConnections({\""+$node+"\"});")
+		    	($nodeType+"sciListConnectionsButton");
+
+	setParent ..;
+
+	separator( "-style", "none",
+				"-width", 490,
+				"-height", 10 );
+
+	AEdependNodeSciListConnectionsReplace( $plug );
+}
+//___________________________________________________________________________
+//
+//
+global proc AEdependNodeSciListConnectionsReplace( string $plug )
+{
+	string $buffer[] = {};
+	tokenize( $plug, ".", $buffer );
+	string $node = (size($buffer) > 0) ? $buffer[0] : "";
+	string $nodeType = nodeType( $node );
+
+	button -edit
+		   -command	("sciListConnections({\""+$node+"\"});")
+			($nodeType+"sciListConnectionsButton");
+}
+
+//___________________________________________________________________________
+//
+//
+global proc sciAddToAEdependNodeTemplate()
+{
+    print(	" // sciloop message: mel: modified Maya file"+
+ 			" 'sciAddToAEdependNodeTemplate.mel'.\n" );
+
+    // Simple choose a attribute that every node has : 'caching'.
+    //
+	editorTemplate(	"-beginLayout",	"sciloop show node data", "-collapse", 0 );
+		editorTemplate( "-callCustom", "AEdependNodeSciListDirtyStatusCreate",
+                      	"AEdependNodeSciListDirtyStatusReplace",
+					   	"caching" );
+		editorTemplate( "-callCustom", "AEdependNodeSciListAttributesCreate",
+					   	"AEdependNodeSciListAttributesReplace",
+					   	"caching" );
+		editorTemplate( "-callCustom", "AEdependNodeSciListConnectionsCreate",
+			   			"AEdependNodeSciListConnectionsReplace",
+			   			"caching" );
+	editorTemplate( "-endLayout" );
+
+}
+
+
+
+//###########################################################################
+
+
+//___________________________________________________________________________
+//
+//
