@@ -5,7 +5,7 @@
 // the defalut Maya AETemplates.
 //
 // Currently, all files are for the 'AEdependNodeTemplate.mel'
-// Additionally you need the followind procs :
+// Additionally you need the followind files :
 // 'sciListConnections.mel',
 // 'sciListAttributes.mel',
 // 'sciListDirtyStatus.mel'
