@@ -2,13 +2,15 @@
 // creator : sciloop
 //
 // This file is the place for procs which modify
-// the defalut Maya AETemplates.
+// the default Maya AETemplates.
 //
 // Currently, all files are for the 'AEdependNodeTemplate.mel'
 // Additionally you need the followind files :
 // 'sciListConnections.mel',
 // 'sciListAttributes.mel',
 // 'sciListDirtyStatus.mel'
+// last modified : 2014_07_05
+//
 //___________________________________________________________________________
 //
 //
