@@ -1,0 +1,473 @@
+//
+// creator : sciloop
+//
+// last update: 2014_06_24
+//
+// Display all attributes and their values in the script editor.
+//
+// examples :
+//
+// sciListAttributes( ls( "-l", "-selection" ) );
+// sciListAttributes( {""} );
+//
+//_______________________________________________________________________
+//
+//
+proc string sciGetAttrVal(  string $type,
+                            string $fullName )
+{
+    string $value = "";
+
+    if( $type=="message" )
+    {$value = "has no value";}
+
+    //
+    else if(    $type=="long"           || $type=="doubleAngle" || $type=="enum"    ||
+                $type=="doubleLinear"   || $type=="time"        || $type=="double"  ||
+                $type=="bool"           || $type=="string"      || $type=="byte"    ||
+                $type=="short"          || $type=="float"       || $type=="floatLinear" )
+    {
+        if( catchQuiet( $value = getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+
+        else if( $type=="string" )
+        {$value = "'"+$value+"'";}
+
+        else if( $type=="enum" )
+        {$value = $value+" : "+getAttr( "-asString", $fullName );}
+    }
+
+    // matrix
+    //
+    else if( $type=="matrix" )
+    {
+        float $mat[] = {};
+
+        if( catchQuiet( $mat = getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+        else
+        {
+            int $matSize = size( $mat );
+
+            for( $k=0; $k<$matSize; $k++ )
+            {
+                if( $k==0 )
+                {$value = $mat[$k]+" ";}
+
+                else if( $k==3 || $k==7 || $k==11 )
+                {$value = $value+$mat[$k]+"     ";}
+                else
+                {$value = $value+$mat[$k]+" ";}
+            }
+        }
+    }
+
+    // floats
+    //
+    else if(    $type=="doubleArray"    || $type=="vectorArray"     || $type=="pointArray"  ||
+                $type=="float3"         || $type=="float2"          || $type=="double3"     ||
+                $type=="double2"        || $type=="reflectanceRGB"  || $type=="spectrumRGB" )
+    {
+
+        float $valueFloat[] = {};
+
+        if( catchQuiet( $valueFloat = getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+        else
+        {
+            int $size = size( $valueFloat );
+
+            if( $type=="doubleArray" || $type=="vectorArray" || $type=="pointArray" )
+            {$value = "size: "+$size+"  values: ";}
+
+            for( $i=0; $i<$size; $i++ )
+            {
+                $value += $valueFloat[$i]+" ";
+
+                if( $i==9 )
+                {
+                    $value += ". . .";
+                    break;
+                }
+            }
+        }
+    }
+
+    // ints
+    //
+    else if(    $type=="int32Array" || $type=="short3"  ||
+                $type=="short2"     || $type=="long3"   || $type=="long2" )
+    {
+        int $valueInt[] = {};
+
+        if( catchQuiet( $valueIntFloat = getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+        else
+        {
+            int $size = size( $valueInt );
+
+            if( $type=="int32Array" )
+            {$value = "size: "+$size+"  values: ";}
+
+            for( $i=0; $i<$size; $i++ )
+            {
+                $value += $valueInt[$i]+" ";
+
+                if( $i==6 )
+                {break;}
+            }
+        }
+
+    }
+
+    // strings
+    //
+    else if( $type=="stringArray" || $type=="componentList" )
+    {
+        string $valueString[] = {};
+        if( catchQuiet( $valueString = getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+        else
+        {
+            int $size = size( $valueString );
+
+            $value = "size: "+$size+"  values: ";
+
+            for( $i=0; $i<$size; $i++ )
+            {
+                $value += $valueString[$i]+" ";
+                if( $i==9 )
+                {
+                    $value += ". . .";
+                    break;
+                }
+            }
+        }
+    }
+
+    // other types not dealt with explictly
+    //
+    else
+    {
+        if( catchQuiet( getAttr( $fullName ) ) )
+        {$value = "not displayable";}
+        else
+        {
+            if( !catchQuiet( $valueString = getAttr( $fullName ) ) )
+            {
+                 int $size = size( $valueString );
+                 $value = "size: "+$size+"  values: ";
+
+                 for( $i=0; $i<$size; $i++ )
+                 {
+                     $value += $valueString[$i]+" ";
+                     if( $i==9 )
+                     {
+                         $value += ". . .";
+                         break;
+                     }
+                 }
+            }
+            else
+            {$value = "not displayable";}
+        }
+
+    }
+
+    return $value;
+}
+
+//______________________________________________________________________
+//
+//
+global proc sciListAttributes( string $sel[] )
+{
+    if( size($sel)==0 )
+    {$sel = ls( "-l", "-selection" );}
+
+    if( size($sel)==0 )
+    {
+        print( " Select a node, please.\n" );
+        return;
+    }
+
+    if( !objExists( $sel[0] ) )
+    {
+        print( " The object "+$sel[0]+" does not exist.\n" );
+        return;
+    }
+
+
+    $sel = ls( "-l", $sel[0] );
+    $node = $sel[0];
+
+    string $isMultiString   = "";
+    string $isElementString = "";
+    string $isParentString  = "";
+    string $isChildString   = "";
+
+    int $isMulti   = false;
+    int $isElement = false;
+    int $isParent  = false;
+    int $isChild   = false;
+
+    string $nodeType  = nodeType( $node );
+    string $allAttr[] = attributeInfo( "-all", $node );
+    int $sizeAttr     = size( $allAttr );
+
+    print( " node : "+$node+"\n" );
+    print( " type : "+$nodeType+"\n\n" );
+    print( " attributes and values :\n" );
+
+    for( $i=0; $i<$sizeAttr; $i++ )
+    {
+
+        int $isMult   = false;
+        int $isParent = false;
+        int $isChild  = false;
+        string $parent[] = {};
+        string $childs[] = {};
+        string $mult[]   = {};
+        clear $parent;
+        clear $mult;
+        clear $childs;
+
+        $isMult   = attributeQuery( "-multi", "-n", $node, $allAttr[$i] );
+        $mult     = plugMultiAttrs( $sel[0]+"."+$allAttr[$i] );
+        $parent   = attributeQuery( "-listParent",   "-n", $node, $allAttr[$i] );
+        $childs   = attributeQuery( "-listChildren", "-n", $node, $allAttr[$i] );
+
+        int $sizeParent = size( $parent );
+        int $sizeChilds = size( $childs );
+
+        if( $sizeParent==0 )
+        {$isChild = false;}
+        else
+        {$isChild = true;}
+
+        if( $sizeChilds==0 )
+        {$isParent = false;}
+        else
+        {$isParent = true;}
+
+        string $elements[] = {};
+
+        string $attrString = "";
+        string $startVoid = " ";
+
+        string $void0 = "";
+        int $max0 = 60;
+        int $max1 = 22;
+        string $void1 = "";
+        string $type = "";
+        string $fullName = "";
+        string $value = "";
+
+        // Get character count of attribute name.
+        //
+        int $attrLength = size( $allAttr[$i] );
+        if( $attrLength<55 )
+        {$max0 = 60;}
+        else if( $attrLength<95 )
+        {$max0 = 100;}
+        for( $m=0; $m<($max0-$attrLength); $m++ )
+        {$void0 = $void0+" ";}
+
+         if( $isMult )
+        {$isMultiString = "yesMulti ";}
+        else
+        {$isMultiString = "noMulti  ";}
+
+        if( attributeExists( $allAttr[$i], $node ) )
+        {
+            // case: NO mult, NO parent, NO child:
+            //
+            if( !$isMult )
+            {
+                $isElementString = "noElement ";
+
+                int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
+
+                if( $failed )
+                {$type = "cannot retrieve type";}
+
+                if( $type=="" )
+                {$type = "empty return type";}
+
+                int $typeLength = size( $type );
+
+                for( $m=0; $m<($max1-$typeLength); $m++ )
+                {$void1 = $void1+" ";}
+
+
+                if( $isChild==true )
+                {$isChildString = "yesChild";}
+                else
+                {$isChildString = "noChild ";}
+
+                $value = sciGetAttrVal( $type, $node+"."+$allAttr[$i] );
+                if( $isParent==false )
+                {$isParentString = "noParent ";}
+                else
+                {$isParentString = "yesParent";}
+
+                print(  $startVoid+$allAttr[$i]+$void0+$type+$void1+
+                        $isElementString+" "+$isParentString+" "+
+                        $isChildString+" "+$value+"\n" );
+            }
+
+
+            if( $isMult )
+            {
+                $elements = listAttr( "-multi", $node+"."+$allAttr[$i] );
+                int $sizeElem = size( $elements );
+
+                // Limit the element count -> can take forever if too much elements
+                //
+                if( $sizeElem>10000 )
+                {
+                    print( "ElementCount of '"+$allAttr[$i]+"' is too high -> "+
+                            $sizeElem+". Limit too 10000.\n" );
+                    $sizeElem = 10000;
+                }
+
+                if( $sizeElem==0 )
+                {
+                    int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
+
+                    if( $failed )
+                    {$type = "cannot retrieve type";}
+
+                    if( $type=="" )
+                    {$type = "empty return type";}
+
+                    int $typeLength = size( $type );
+
+                    for( $m=0; $m<($max1-$typeLength); $m++ )
+                    {$void1 = $void1+" ";}
+
+
+                    $isElementString = "yesMulti  ";
+                    if( $isChild==true )
+                    {$isChildString = "yesChild";}
+                    else
+                    {$isChildString = "noChild ";}
+
+                    if( !$isParent )
+                    {$isParentString = "noParent ";}
+                    else
+                    {$isParentString = "yesParent";}
+
+                    $value = "";
+                    print(  $startVoid+$allAttr[$i]+$void0+$type+$void1+
+                            $isElementString+" "+$isParentString+" "+
+                            $isChildString+" "+$value+"\n" );
+                }
+
+                for( $k=0; $k<$sizeElem; $k++ )
+                {
+                    string $buffer0[] = {};
+                    clear $buffer0;
+                    int $numTokens0 = tokenize( $elements[$k], ".", $buffer0 );
+                    string $lastAttr = $buffer0[$numTokens0-1];
+
+                    string $buffer1[] = {};
+                    clear $buffer1;
+                    int $numTokens1 = tokenize( $lastAttr, "[", $buffer1 );
+                    string $pureAttr = $buffer1[0];
+
+
+                    int $numChilds[] = {};
+                    clear $numChilds;
+                    $numChilds = attributeQuery( "-numberOfChildren", "-n", $node, $pureAttr );
+
+                    int $isMult = attributeQuery( "-multi", "-n", $sel, $pureAttr );
+
+                    string $par[] = {};
+                    $par[0] = "";
+                    $par    = attributeQuery( "-listParent", "-n", $node, $pureAttr );
+
+
+                    if( $numTokens1>1 )
+                    {$isElementString = "yesElement ";}
+                    else
+                    {$isElementString = "noElement  ";}
+
+                    if( $numChilds[0] )
+                    {$isParentString = "yesParent ";}
+                    else
+                    {$isParentString = "noParent  ";}
+
+                    if( $par[0]=="" )
+                    {$isChildString = "noChild  ";}
+                    else
+                    {$isChildString = "yesChild ";}
+
+                    // Get charactor count of attribute name.
+                    //
+                    $void0 = "";
+                    $void1 = "";
+                    $attrLength = size( $elements[$k] );
+
+                    if( $attrLength<55 )
+                    {$max0 = 60;}
+                    else if( $attrLength<95 )
+                    {$max0 = 100;}
+                    for( $m=0; $m<$max0-$attrLength; $m++ )
+                    {$void0 = $void0+" ";}
+
+                    // Get character count of attribute type.
+                    //
+                    int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$elements[$k]) );
+
+                    if( $failed )
+                    {$type = "cannot retrieve type";}
+
+                    if( $type=="" )
+                    {$type = "empty return type";}
+
+                    int $typeLength = size( $type );
+                    for( $m=0; $m<($max1-$typeLength); $m++ )
+                    {$void1 = $void1+" ";}
+
+                    $value = sciGetAttrVal( $type,
+                                            $node+"."+$elements[$k] );
+
+                    print(  $startVoid+$elements[$k]+$void0+$type+
+                            $void1+$isElementString+$isParentString+
+                            $isChildString+$value+"\n" );
+                }
+            }
+        }
+        else
+        {
+            if( $isMult==true )
+            {$isMultiString = "yesMulti  ";}
+            else
+            {$isMultiString = "noMulti   ";}
+
+            if( $isChild==true )
+            {$isChildString = "yesChild";}
+            else
+            {$isChildString = "noChild ";}
+
+            if( $isParent==false )
+            {$isParentString = "noParent ";}
+            else
+            {$isParentString = "yesParent";}
+
+            $type = "no type returned";
+            int $typeLength = size( $type );
+
+            for( $m=0; $m<($max1-$typeLength); $m++ )
+            {$void1 = $void1+" ";}
+
+            print(  $startVoid+$allAttr[$i]+$void0+$type+$void1+
+                    $isMultiString+" "+$isParentString+" "+
+                    $isChildString+"\n" );
+        }
+    }
+}
+
+//________________________________________________________________________
+//
