@@ -38,6 +38,8 @@
 // sciloop : reason for modification of original file:
 // add attribute status checks to every dependNode
 //
+// For this file to work you need the file : 'sciAddToAETemplates.mel'
+//
 // last update: 2014_07_02
 //
 //_________________________________________________________________________________________
