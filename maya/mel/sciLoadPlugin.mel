@@ -1,0 +1,32 @@
+//
+// creator : sciloop
+//
+// return value : empty string if failed, nodeType if success.
+//
+// last modified : 2014_03_02
+//
+//___________________________________________________________________________________________
+//
+//
+global proc string[] sciLoadPlugin( string $str )
+{
+	string $sn = " // sciloop message : mel : 'sciLoadPlugin' : ";
+
+	string $pluginName[] = {};
+	$pluginName[0] = $str;
+
+	if( catchQuiet( loadPlugin( "-quiet", $str ) ) )
+    {
+		print(	$sn+"the plugin: '"+$str+
+				"' could not be found in the plugin search paths"+
+				" and was not loaded.\n" );
+		$pluginName[0] = "";
+	}
+
+	return $pluginName;
+}
+
+//___________________________________________________________________________________________
+//
+//
+
