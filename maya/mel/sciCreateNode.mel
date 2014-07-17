@@ -1,0 +1,159 @@
+//
+// creator : sciloop
+//
+// We want to create a node.
+// Select a container, if you want the node be a part of it.
+// second parameter : "skipSelect", if you do not want the
+// created node be automatically selected.
+//
+// last modified : 2014_05_05
+//
+// examples :
+// sciCreateNode( {"mesh"} );
+// sciCreateNode( {"mesh", "skipSelect"} );
+//
+//____________________________________________________________________________________
+//
+//
+global proc sciCreateNode( string $input[] )
+{
+	string $sn = " // sciloop message : mel : 'sciCreateNode' : ";
+
+	int $sizeInput = size( $input );
+
+	if( $sizeInput==0 )
+	{
+		print( $sn+"Parameter list is empty. Terminate script!\n" );
+		return;
+	}
+
+	string $sel[] = sciGetSelectedNodeTypes( "container" );
+
+	string $container = "";
+
+	if( size($sel)!=0 )
+	{$container = $sel[0];}
+
+	string $nodeType = $input[0];
+	string $createdNode = "";
+
+	// Node is already loaded -> creation succeeds.
+	//
+	int $sciSuccess = -1;
+
+	if( $sizeInput==2 )
+	{
+		if( $input[1]=="skipSelect" )
+		{
+			$sciSuccess = !catchQuiet( $createdNode = createNode(	"-skipSelect",
+																	$nodeType,
+																	"-n", $nodeType+"#" ) );
+
+			if( nodeType($createdNode)=="unknown" )
+			{
+				$sciSuccess = false;
+				delete $createdNode;
+			}
+		}
+	}
+	else
+	{
+		$sciSuccess = !catchQuiet( $createdNode = createNode(	$nodeType,
+																"-n", $nodeType+"#" ) );
+
+		if( nodeType($createdNode)=="unknown" )
+		{
+			$sciSuccess = false;
+			delete $createdNode;
+		}
+
+	}
+
+	// plugin has to be loaded before creating the node.
+	//
+	if( $sciSuccess==false )
+	{
+		string $pluginName[] = sciLoadPlugin( $nodeType );
+
+		if( $pluginName[0]=="" )
+		{
+			print(	$sn+"the node: '"+$nodeType+"' could not be created,"+
+					" because the plugin does not exist.\n" );
+			return;
+		}
+
+		// If the second parameter is "skipSelect", we do not want
+		// the created node be selected.
+		//
+		if( $sizeInput==2 )
+		{
+			if( $input[1]=="skipSelect" )
+			{
+				$sciSuccess = !catchQuiet( $createdNode = createNode(	"-skipSelect",
+																		$nodeType,
+																		"-n", $nodeType+"#" ) );
+			}
+			else
+			{
+				print( $sn+"second parameter must be 'skipSelect'. Created node will be selected!\n" );
+				$sciSuccess = !catchQuiet( $createdNode = createNode( $nodeType, "-n", $nodeType+"#" ) );
+			}
+		}
+		else
+		{$sciSuccess = !catchQuiet( $createdNode = createNode( $nodeType, "-n", $nodeType+"#" ) );}
+
+
+		if( $sciSuccess==false || nodeType($createdNode)=="unknown" )
+		{
+			delete $createdNode;
+			print( $sn+"nodeType : "+$nodeType+" could not be created. Terminate script!\n" );
+			return;
+		}
+
+	}
+
+	// Check whether we have a shape node.
+	//
+	string $parent = "";
+	string $parentNodes[] = nodeType( "-inherited", $createdNode );
+
+	for( $node in $parentNodes )
+	{
+		if( $node=="geometryShape" )
+		{
+			string $rel[] = listRelatives( "-f","-p", $createdNode );
+			if( size($rel)!=0 )
+			{$parent = $rel[0];}
+			break;
+		}
+	}
+
+	// In case a container node was selected when the script is run,
+	// we want the created node(s) be part of that container.
+	//
+	if( $container=="" )
+	{
+		if( $parent=="" )
+		{print( $sn+"created node : '"+$createdNode+"'\n" );}
+		else
+		{print( $sn+"created nodes : '"+$createdNode+"', '"+$parent+"'\n" );}
+
+		return;
+	}
+
+	string $createdNodes[] = {$createdNode};
+
+	if( $parent!="" )
+	{$createdNodes[1] = $parent;}
+
+	container( "-e", "-f", "-an", $createdNodes, $container );
+
+	if( $parent=="" )
+	{print( $sn+"created node : '"+$createdNode+"' in : '"+$container+"'\n" );}
+	else
+	{print( $sn+"created nodes : '"+$createdNode+"', '"+$parent+"' in container: '"+$container+"'\n" );}
+}
+
+//___________________________________________________________________________________
+//
+//
