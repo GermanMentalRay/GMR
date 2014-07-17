@@ -1,0 +1,165 @@
+//
+// creator : sciloop
+//
+// From the current selection, get all nodes which have the input nodeType.
+// Ignore components/attributes.
+//
+// last modified : 2014_02_06
+// example :
+//
+// sciGetSelectedNodeTypes( "mesh" );
+//______________________________________________________________________________
+//
+//
+global proc sciGetSelectedNodeTypesSourced()
+{
+	print( " // sciloop message: mel: file" +
+			" 'sciGetSelectedNodeTypes.mel' sourced.\n" );
+}
+sciGetSelectedNodeTypesSourced();
+
+///______________________________________________________________________________
+//
+//
+global proc string[] sciGetSelectedNodeTypes( string $nodeType )
+{
+	string $sn = " // mel : 'sciGetSelectedNodeTypes' : ";
+
+	// Do we have a node of that nodeType in the scene at all?
+	//
+	string $typesInScene[] = ls( "-type", $nodeType );
+	int $sizeTypes = size( $typesInScene );
+	if( $sizeTypes==0 )
+	{
+		print(	$sn+" Warning: we do not have"+
+				" nodes of type"+$nodeType+" in the scene!\n" );
+		string $empty[] = {};
+		return $empty;
+	}
+
+	// Is our nodeType of type 'shape'?
+	// workaround: 'nodeType -derivedFrom' does not work
+	// in Maya2014, so check for the 'primaryVibility'
+	// attribute present only in shapes.
+	//
+	int $targetNodeIsShape = false;
+	if( attributeExists( "primaryVisibility", $typesInScene[0] ) )
+	{$targetNodeIsShape=true;}
+
+	// We want the selection and check whether
+	// its a node or a component.
+	//
+	string $sel[] = ls( "-l", "-selection" );
+	string $selectionList[] = {};
+	string $tmpList[] = {};
+
+	// We want only the node, not ist attribute part.
+	//
+	for( $i=0; $i<size($sel); $i++ )
+	{$tmpList[$i] = plugNode( $sel[$i] );}
+
+	// We want the node in the selection list only once.
+	//
+	for( $i=0; $i<size($tmpList); $i++ )
+	{
+		int $nodeIsAlreadyInList = false;
+		for( $k=0; $k<size($selectionList); $k++ )
+		{
+			if( $selectionList[$k]==$tmpList[$i] )
+			{
+				$nodeIsAlreadyInList = true;
+				break;
+			}
+		}
+
+		if( $nodeIsAlreadyInList==false )
+		{$selectionList[size($selectionList)] = $tmpList[$i];}
+	}
+
+	// Depending on the type of 'nodeType', take into
+	// consideration also selected transform nodes.
+	// If there`s a transform in the selection list,
+	// and it the target node is of type 'shape',
+	// we want to get the shape of the selected transform.
+	//
+	string $outputList[] = {};
+
+	// The target node is not of type 'shape', so we can
+	// directly produce the outputList.
+	//
+	if( $targetNodeIsShape==false )
+	{
+		int $k=0;
+		for( $i=0; $i<size($selectionList); $i++ )
+		{
+			if( nodeType( $selectionList[$i] )==$nodeType )
+			{
+				$outputList[$k] = $sel[$i];
+				$k++;
+			}
+		}
+		return $outputList;
+	}
+
+	// The target node is of type 'shape'.
+	//
+	else
+	{
+		// Check, whether we have transforms in the
+		// selection list.
+		//
+		string $selectedTransforms[] = {};
+
+		for( $i=0; $i<size($selectionList); $i++ )
+		{
+			if( nodeType( $selectionList[$i] )=="transform" )
+			{$selectedTransforms[$i] = $selectionList[$i];}
+			else
+			{$selectedTransforms[$i] = "";}
+		}
+
+		// Check, whether we have the target node type
+		// in the selection list.
+		//
+		string $selectedTargetNodeTypes[] = {};
+
+		for( $i=0; $i<size($selectionList); $i++ )
+		{
+			if( nodeType( $selectionList[$i] )==$nodeType )
+			{$selectedTargetNodeTypes[$i] = $selectionList[$i];}
+			else
+			{$selectedTargetNodeTypes[$i] = "";}
+		}
+
+		// Get from the transform list the shape if its type
+		// is the target node type.
+		//
+		for( $i=0; $i<size($selectedTransforms); $i++ )
+		{
+			if( $selectedTransforms[$i]!="" )
+			{
+				string $children[] = listRelatives(	"-f",
+													"-ad",
+													"-type", $nodeType,
+													$selectedTransforms[$i] );
+
+				for( $k=0; $k<size($children); $k++ )
+				{$outputList[size($outputList)] = $children[$k];}
+			}
+		}
+
+		// Transfer from the shapes to the output list.
+		//
+		for( $i=0; $i<size($selectedTargetNodeTypes); $i++ )
+		{
+			if( $selectedTargetNodeTypes[$i]!="" )
+			{$outputList[size($outputList)] = $sel[$i];}
+		}
+	}
+
+	return $outputList;
+}
+
+//______________________________________________________________________________
+//
+//
