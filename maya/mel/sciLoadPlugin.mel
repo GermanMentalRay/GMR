@@ -1,7 +1,7 @@
 //
 // creator : sciloop
 //
-// return value : empty string if failed, nodeType if success.
+// return value : string array; empty string as first element if failed, nodeType if success.
 //
 // last modified : 2014_03_02
 //
