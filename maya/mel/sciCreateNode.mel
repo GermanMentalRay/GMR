@@ -6,7 +6,7 @@
 // second parameter : "skipSelect", if you do not want the
 // created node be automatically selected.
 //
-// You need the procedure : 'sciGetSelectedNodeTypes'.
+// You need the procedures : 'sciGetSelectedNodeTypes' and 'sciLoadPlugin'.
 //
 // last modified : 2014_05_05
 //
