@@ -6,6 +6,8 @@
 // second parameter : "skipSelect", if you do not want the
 // created node be automatically selected.
 //
+// You need the procedure : 'sciGetSelectedNodeTypes'.
+//
 // last modified : 2014_05_05
 //
 // examples :
@@ -45,9 +47,7 @@ global proc sciCreateNode( string $input[] )
 	{
 		if( $input[1]=="skipSelect" )
 		{
-			$sciSuccess = !catchQuiet( $createdNode = createNode(	"-skipSelect",
-																	$nodeType,
-																	"-n", $nodeType+"#" ) );
+			$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", $nodeType, "-n", $nodeType+"#" ) );
 
 			if( nodeType($createdNode)=="unknown" )
 			{
@@ -58,8 +58,7 @@ global proc sciCreateNode( string $input[] )
 	}
 	else
 	{
-		$sciSuccess = !catchQuiet( $createdNode = createNode(	$nodeType,
-																"-n", $nodeType+"#" ) );
+		$sciSuccess = !catchQuiet( $createdNode = createNode( $nodeType, "-n", $nodeType+"#" ) );
 
 		if( nodeType($createdNode)=="unknown" )
 		{
@@ -89,9 +88,7 @@ global proc sciCreateNode( string $input[] )
 		{
 			if( $input[1]=="skipSelect" )
 			{
-				$sciSuccess = !catchQuiet( $createdNode = createNode(	"-skipSelect",
-																		$nodeType,
-																		"-n", $nodeType+"#" ) );
+				$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", $nodeType, "-n", $nodeType+"#" ) );
 			}
 			else
 			{
