@@ -8,7 +8,7 @@ Content from our German Mental Ray Network:
 3. http://sculpting.de
 
 ## Maya
-### Mel Scripts
+### [Mel Scripts](https://github.com/GermanMentalRay/GMR/tree/master/maya/mel)
 
 -   *sciListAttributes:*	
 	Display all attributes and their values in the script editor.
@@ -21,3 +21,12 @@ Content from our German Mental Ray Network:
 -   *sciLoadPlugin*
 -   *sciToggleViewportRenderer*
 
+## mentalray
+### [Phenomenons](https://github.com/GermanMentalRay/GMR/tree/master/mentalray/phenomenons)
+-    MattePasses
+-    PassContainer
+
+## XSI
+### [Plugins](https://github.com/GermanMentalRay/GMR/tree/master/xsi/plugin)
+-   mia_RenderToolkit.xsiaddon	
+    Material converter. Every phong material is converted to mia_material and add "render in channels" functionality
