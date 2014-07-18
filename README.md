@@ -21,6 +21,9 @@ Content from our German Mental Ray Network:
 -   *sciLoadPlugin*
 -   *sciToggleViewportRenderer*
 
+### [Plugins](https://github.com/GermanMentalRay/GMR/tree/master/maya/plugins)
+-   Field3D
+
 ## mentalray
 ### [Phenomenons](https://github.com/GermanMentalRay/GMR/tree/master/mentalray/phenomenons)
 -    MattePasses
