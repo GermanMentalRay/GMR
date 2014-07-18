@@ -139,9 +139,9 @@ global proc string[] sciGetSelectedNodeTypes( string $nodeType )
 			if( $selectedTransforms[$i]!="" )
 			{
 				string $children[] = listRelatives(	"-f",
-													"-ad",
-													"-type", $nodeType,
-													$selectedTransforms[$i] );
+									"-ad",
+									"-type", $nodeType,
+									$selectedTransforms[$i] );
 
 				for( $k=0; $k<size($children); $k++ )
 				{$outputList[size($outputList)] = $children[$k];}
