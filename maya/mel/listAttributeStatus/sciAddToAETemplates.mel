@@ -157,8 +157,8 @@ global proc AEdependNodeSciListConnectionsReplace( string $plug )
 //
 global proc sciAddToAEdependNodeTemplate()
 {
-    print(	" // sciloop message: mel: modified Maya file"+
- 			" 'sciAddToAEdependNodeTemplate.mel'.\n" );
+ //print(	" // sciloop message: mel: modified Maya file"+
+ //			" 'sciAddToAEdependNodeTemplate.mel'.\n" );
 
     // Simple choose a attribute that every node has : 'caching'.
     //
