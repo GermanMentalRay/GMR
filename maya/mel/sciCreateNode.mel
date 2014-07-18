@@ -47,7 +47,9 @@ global proc sciCreateNode( string $input[] )
 	{
 		if( $input[1]=="skipSelect" )
 		{
-			$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", $nodeType, "-n", $nodeType+"#" ) );
+			$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", 
+										$nodeType, 
+										"-n", $nodeType+"#" ) );
 
 			if( nodeType($createdNode)=="unknown" )
 			{
@@ -88,7 +90,8 @@ global proc sciCreateNode( string $input[] )
 		{
 			if( $input[1]=="skipSelect" )
 			{
-				$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", $nodeType, "-n", $nodeType+"#" ) );
+				$sciSuccess = !catchQuiet( $createdNode = createNode( "-skipSelect", 
+										$nodeType, "-n", $nodeType+"#" ) );
 			}
 			else
 			{
