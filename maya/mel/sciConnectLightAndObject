@@ -1,0 +1,291 @@
+//
+// Create the lightLinker connection between light and object.
+//
+// Select a light and a renderable object.
+// Or select the set where the light/the object is a member of.
+//
+// Its generally best to create sets for DAG groups lit by the same light(s)
+// and also create sets for lights which light their objects.
+//
+// Do not forget to delete the default relationships via the 'defaultLightSet'.
+//
+// Options for calling the light linking function.
+//
+/*
+ sciConnectLightAndObjects(	"makeLightIlluminate",
+							"makeLightIgnoreIlluminate",
+							"makeLightShadow",
+							"makeLightIgnoreShadow" );
+
+
+// We want light and shadow
+ sciConnectLightAndObjects(	"makeLightIlluminate",
+							"NOTmakeLightIgnoreIlluminate",
+							"makeLightShadow",
+							"NOTmakeLightIgnoreShadow" );
+
+
+// We want only light
+ sciConnectLightAndObjects(	"makeLightIlluminate",
+							"NOTmakeLightIgnoreIlluminate",
+							"NOTmakeLightShadow",
+							"makeLightIgnoreShadow" );
+
+// We want only shadow
+ sciConnectLightAndObjects(	"NOTmakeLightIlluminate",
+							"makeLightIgnoreIlluminate",
+							"makeLightShadow",
+							"NOTmakeLightIgnoreShadow" );
+
+*/
+//
+//___________________________________________________________________________________
+//
+//
+global proc int sciGetDagLightsSetsMembers(	string $member,
+											string $set,
+											string $DAGSets[],
+											string $lightSet[] )
+{
+	if( nodeType( $member )=="transform" )
+	{
+		string $shapes[] = listRelatives(	"-f",
+											"-ad",
+											$member );
+		int $sizeShapes = size( $shapes );
+
+		for( $shape in $shapes )
+		{
+			if( size( lsThroughFilter(	"-item", $shape,
+										"sciRenderableObjectShapeFilter" ) ) )
+			{
+				$DAGSets[size($DAGSets)] = $set;
+				return true;
+			}
+
+			if( size( lsThroughFilter(	"-item", $shape,
+										"DefaultAllLightsFilter" ) ) )
+			{
+				$lightSet[0] = $set;
+				return true;
+			}
+		}
+	}
+	else if( size( lsThroughFilter(	"-item", $member,
+									"sciRenderableObjectShapeFilter" ) ) )
+	{
+		$DAGSets[size($DAGSets)] = $set;
+		return true;
+	}
+	else if( size( lsThroughFilter(	"-item", $member,
+									"DefaultAllLightsFilter" ) ) )
+	{
+		$lightSet[0] = $set;
+		return true;
+	}
+
+	else if( nodeType( $member )=="objectSet" )
+	{
+		string $members[] = sets( "-q", $member );
+		for( $item in $members )
+		{
+			if( sciGetDagLightsSetsMembers( $item,
+											$set,
+											$DAGSets,
+											$lightSet ) )
+			{return true;}
+		}
+	}
+
+	return false;
+}
+
+//___________________________________________________________________________________
+//
+//
+global proc sciConnectLightAndObjects(	string $makeLightlluminate,
+										string $makeLightIgnoreIlluminate,
+										string $makeLightShadow,
+										string $makeLightIgnoreShadow )
+{
+	string $sn = " // mel : 'sciConnectLightAndObject' :";
+
+	string $sel0[] =ls( "-l", "-sl" );
+	int $size = size( $sel0 );
+
+
+print( $sn+" selectionList = \n" );
+for( $obj in $sel0 )
+{print( " // "+$obj+"\n" );}
+
+
+	if( $size<2 )
+	{
+		print(	$sn+" select at least one objectSet/object and one"+
+				" objectSet/light. Terminate script!\n" );
+		return;
+	}
+
+	// Get all object sets and search them for meshes/lights/objectSets.
+	//
+	string $objectSets[] = sciGetSelectedNodeTypes( "objectSet" );
+	int $sizeSets = size( $objectSets );
+
+	if( $sizeSets>2 )
+	{
+		print(	$sn+" select not more than two objectSets."+
+				" Terminate script!\n" );
+		return;
+	}
+
+	string $DAGSets[]  = {};
+	string $lightSet[] = {};
+
+	for( $set in $objectSets )
+	{
+		string $members[] = sets( "-q", $set );
+
+		for( $member in $members )
+		{
+			if( sciGetDagLightsSetsMembers( $member,
+											$set,
+											$DAGSets,
+											$lightSet ) )
+			{break;}
+		}
+	}
+
+	// If we do not have a set with DAGs inside, search
+	// the selection list for meshes.
+	//
+	if( size($DAGSets)==0 )
+	{
+		for( $item in $sel0 )
+		{
+			string $renderable[] =
+				lsThroughFilter(	"-item", $item,
+									"sciRenderableObjectShapeFilter" );
+			if( size( $renderable ) )
+			{$DAGSets[size($DAGSets)] = $renderable[0];}
+		}
+	}
+
+	// If we do not have a set with lights inside, search
+	// the selection list for lights.
+	//
+	int $lightCount=0;
+
+	if( size($lightSet)==0 )
+	{
+		for( $item in $sel0 )
+		{
+			string $lighter[] = lsThroughFilter(	"-item", $item,
+													"DefaultAllLightsFilter" );
+			if( size( $lighter ) )
+			{
+				$lightSet[0] = $lighter[0];
+				$lightCount++;
+			}
+		}
+	}
+
+
+	if( size( $lightSet )==0 )
+	{
+		print(	$sn+" Warning : no light or objectSet"+
+				" with lights in selection. Terminate script!\n" );
+		return;
+	}
+
+	if( $lightCount>1 )
+	{
+		print(	$sn+" Warning : more than one light selected."+
+				" Choose last in selection list.\n" );
+	}
+
+print( "\n" );
+print( " // DAGSets =\n" );
+print $DAGSets;
+print( "\n" );
+print( " // lightSet =\n" );
+print $lightSet;
+print( "\n" );
+
+	for( $item in $DAGSets )
+	{
+		//int $index = getNextFreeMultiIndex( "lightLinker1.link", 0 );
+		int $index = getAttr( "-size", "lightLinker1.link" );
+
+		print( $sn+" connect to lightLinker1 index "+$index+"\n" );
+
+
+		if( $makeLightlluminate=="makeLightIlluminate" )
+		{
+			if( catch( connectAttr(	"-f",
+									($item+".message"),
+									("lightLinker1.link["+$index+"].object") ) ) )
+			{continue;}
+
+			if( catch( connectAttr(	"-f",
+								($lightSet[0]+".message"),
+								("lightLinker1.link["+$index+"].light") ) ) )
+			{continue;}
+
+			print( $sn+" makeLightIlluminate!\n" );
+		}
+
+		if( $makeLightShadow=="makeLightShadow" )
+		{
+			if( catch( connectAttr(	"-f",
+									($item+".message"),
+									("lightLinker1.shadowLink["+$index+"].shadowObject") ) ) )
+			{continue;}
+
+			if( catch( connectAttr(	"-f",
+									($lightSet[0]+".message"),
+									("lightLinker1.shadowLink["+$index+"].shadowLight") ) ) )
+			{continue;}
+
+			print( $sn+" makeLightShadow!\n" );
+		}
+
+
+
+
+
+		if( $makeLightIgnoreIlluminate=="makeLightIgnoreIlluminate" )
+		{
+			if( catch( connectAttr(	"-f",
+									($item+".message"),
+									("lightLinker1.ignore["+$index+"].objectIgnored") ) ) )
+			{continue;}
+
+			if( catch( connectAttr(	"-f",
+									($lightSet[0]+".message"),
+									("lightLinker1.ignore["+$index+"].lightIgnored") ) ) )
+			{continue;}
+
+			print( $sn+" makeLightIgnoreIlluminate!\n" );
+		}
+		if( $makeLightIgnoreShadow=="makeLightIgnoreShadow" )
+		{
+			if( catch( connectAttr(	"-f",
+									($item+".message"),
+									("lightLinker1.shadowIgnore["+$index+"].shadowObjectIgnored") ) ) )
+			{continue;}
+			if( catch( connectAttr(	"-f",
+									($lightSet[0]+".message"),
+									("lightLinker1.shadowIgnore["+$index+"].shadowLightIgnored") ) ) )
+			{continue;}
+
+			print( $sn+" makeLightIgnoreShadow!\n" );
+		}
+	}
+
+	print( $sn+" done!\n" );
+
+}
+
+//___________________________________________________________________________________
+//
+//
