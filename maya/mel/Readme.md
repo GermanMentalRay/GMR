@@ -12,4 +12,6 @@
 	Load a plugin. Return a string array. If the procedure fails, the first element of the array is an empty string. If it succeeds, the name of the plugin is returned. 
 -   *sciToggleViewportRenderer:*
 	Toggle between vp2 and the old standard viewport renderer.
+-   *sciConnectLightAndObject:*
+	Create lightLinker connections between light and object.
    
