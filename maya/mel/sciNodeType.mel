@@ -1,0 +1,55 @@
+//
+// creator : sciloop
+//
+//
+//
+// creator sciloop
+//
+// This script returns from the list of input nodes
+// a string array with all nodeTypes.
+//
+// examples :
+//
+// print( sciNodeType( ls( "-l", "-selection" ) ) );
+//
+//__________________________________________________________________________________
+//
+//
+global proc string[] sciNodeType( string $sel[] )
+{
+    string $sn = " // mel : 'sciNodeType' : ";
+
+    if( size($sel)==0 )
+    {
+        print( $sn+"selection list is empty.\n" );
+        return {};
+    }
+
+    string $nodeTypes[] = {};
+
+    for( $node in $sel )
+    {
+        if( !objExists($node) )
+        {continue;}
+
+        int $isAlreadyIn = false;
+
+        for( $type in $nodeTypes )
+        {
+            if( $type==nodeType($node) )
+            {
+                $isAlreadyIn = true;
+                break;
+            }
+        }
+
+        if( $isAlreadyIn==false )
+        {$nodeTypes[size($nodeTypes)] = nodeType( $node );}
+    }
+
+    return $nodeTypes;
+}
+
+//__________________________________________________________________________________
+//
+//
