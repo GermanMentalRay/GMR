@@ -36,6 +36,20 @@ proc string sciGetAttrVal(  string $type,
 
         else if( $type=="enum" )
         {$value = $value+" : "+getAttr( "-asString", $fullName );}
+
+        else if( $type=="bool" )
+        {
+            string $boolean = "";
+
+            if( $value==0 )
+            {$boolean = "false";}
+            else if( $value==1 )
+            {$boolean = "true";}
+            else
+            {$boolean = "is not false or true";}
+
+            $value = $value+" : "+$boolean;
+        }
     }
 
     // matrix
