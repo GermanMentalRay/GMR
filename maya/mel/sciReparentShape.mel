@@ -1,0 +1,122 @@
+//
+// creator : sciloop
+//
+// This script reparents the selected shape node to the selected transform node.
+//
+// Select a shape node and a transform node.
+//
+// examples :
+//
+// sciReparentShape( "absolute" );
+// sciReparentShape( "relative" );
+//
+//__________________________________________________________________________________
+//
+//
+global proc sciDoReparent( string $space )
+{
+    string $sn = " // mel : 'sciDoReparent' : ";
+
+    string $sel[] = ls( "-l", "-selection" );
+    int $size = size( $sel );
+
+    if( $size!=2 )
+    {
+            print(  $sn+" script aborted. Please select"+
+                    " one transform and one shape\n" );
+            return;
+    }
+
+    int $i;
+    string $transform = "NONE";
+    string $mesh = "NONE";
+
+    for( $node in $sel )
+    {
+        if( nodeType( $node )=="transform" )
+        {$transform = $node;}
+        else
+        {
+            string $shapeTypes[] = nodeType(    "-derived",
+                                                "-isTypeName",
+                                                "shape" );
+
+            for( $shape in $shapeTypes )
+            {
+                if( nodeType( $node )==$shape )
+                {
+                    $mesh = $node;
+                    break;
+                }
+            }
+        }
+
+        if( $transform!="NONE" && $mesh!="NONE" )
+        {break;}
+    }
+
+   if( $mesh=="NONE" || $transform=="NONE" )
+    {
+        print(  $sn+" please select exactly one transform"+
+                " and one shape. Terminate script!\n" );
+    }
+
+    string $currParent[] = listRelatives(  "-p",
+                                           "-type", "transform",
+                                           "-f",
+                                           $mesh );
+    if( $currParent[0]==$transform )
+    {
+        print(  $sn+" source and target transform are"+
+                " identical. Terminate script!\n" );
+    }
+
+    if( $space=="-r" )
+    {parent( $space, "-s", $mesh, $transform );}
+    else if( $space=="-a" )
+    {
+        string $shapes[]  = parent( $space, "-s", $mesh, $transform );
+
+        // We want to delete the transform which Maya creates.
+        //
+        string $parent[] = listRelatives(   "-p",
+                                            "-type", "transform",
+                                            "-f",
+                                            $shapes[0] );
+
+        makeIdentity(   "-apply", true,
+                        "-t", 1,
+                        "-r", 1,
+                        "-s", 1,
+                        "-n", 0,
+                        $parent[0] );
+
+        parent( "-r", "-s", $shapes[0], $transform );
+        delete $parent[0];
+    }
+}
+
+//__________________________________________________________________________________
+//
+//
+global proc sciReparentShape( string $space )
+{
+    if( $space=="absolute" )
+    {$space = "-a";}
+    else if( $space=="relative" )
+    {$space = "-r";}
+    else
+    {
+        print( " // 'sciReparentShape' : wrong argument.\n" );
+        return;
+    }
+    sciDoReparent( $space );
+}
+
+//__________________________________________________________________________________
+//
+//
+
+
+
+
