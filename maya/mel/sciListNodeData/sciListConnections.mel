@@ -1,0 +1,242 @@
+//
+// creator : sciloop
+//
+// last update: 2014_01_22
+//
+// Print a list of all nodes and their attributes which are
+// connected to the selected node.
+//
+// examples :
+//
+// sciListConnections( ls( "-l", "-selection" ) );
+// sciListConnections({});
+//______________________________________________________________
+
+//
+global proc sciListConnections( string $sel[] )
+{
+    string $sn = " // mel : 'sciListConnections' : ";
+
+    if( size($sel)==0 )
+    {$sel = ls( "-selection", "-l" );}
+
+    if( size($sel)==0 )
+    {
+        print( $sn+" nothing selected. Terminate script!\n" );
+        return;
+    }
+
+    if( !objExists( $sel[0] ) )
+    {
+        print( $sn+" the object : "+$sel[0]+" does not exist."+
+                            " Terminate script!\n" );
+        return;
+    }
+
+
+
+    $sel = ls( "-l", $sel[0] );
+
+    string $node = $sel[0];
+
+    print( " nodename = "+$node+"\n" );
+
+    // Get the incoming connections ( sourceNode.outAttr )
+    // to this node.
+    //
+    string $listIn[] = listConnections( "-d", off,
+                                        "-s", on,
+                                        "-p", on,
+                                        $node );
+
+    string $incomingSource[] = {};
+    string $incomingDestination[] = {};
+
+    for( $currIn in $listIn )
+    {
+        string $outputsFromIn[] = listConnections(  "-d", on,
+                                                    "-s", off,
+                                                    "-p", on,
+                                                    $currIn );
+
+        for( $currOutFromIn in $outputsFromIn )
+        {
+            string $name = plugNode( $currOutFromIn );
+            string $longNodeName[] = ls( "-l", $name );
+            int $q;
+
+            // Get thisNode.inputAttr
+            // and sourceNode.outAttr
+            //
+            if( plugNode( $longNodeName[0] )==$node )
+            {
+                $incomingDestination[$q] = $currOutFromIn;
+                $incomingSource[$q]      = $currIn;
+                $q++;
+            }
+        }
+    }
+
+    // Get the outgoing connections
+    // ( destinationNode.inputAttr ) from this node.
+    //
+    string $listOut[] = listConnections(    "-d", on,
+                                            "-s", off,
+                                            "-p", on,
+                                            $node );
+
+    string $outgoingDestination[] = {};
+    string $outgoingSource[] = {};
+    int $hyperCount = 0;
+
+    // Iterate through all output nodes.
+    //
+    for( $destinationNode in $listOut )
+    {
+        string $nodeOutputs[] = listConnections(    "-d", off,
+                                                    "-s", on,
+                                                    "-p", on,
+                                                    $destinationNode );
+
+        // Iterate through all destinationNodes of the selected node
+        //
+        for( $outputNode in $nodeOutputs )
+        {
+            string $name = plugNode( $outputNode );
+            string $longNodeName[] = ls( "-l", $name );
+
+            int $q;
+
+            // Get thisNode.outAttr
+            // and destinationNode.inputAttr.
+            //
+            if( plugNode( $longNodeName[0] )==$node )
+            {
+                $outgoingDestination[$q] = $destinationNode;
+                $outgoingSource[$q]      = $outputNode;
+                $q++;
+
+
+                // Check for hyperLayout and container nodes.
+                //
+                if( nodeType( $destinationNode )=="hyperLayout" )
+                {
+                    string $hypName = plugNode( $destinationNode );
+
+                    string $hyperConnections[] = connectionInfo(    "-destinationFromSource",
+                                                                    ($hypName+".message") ) ;
+
+                    int $containerCount = 0;
+                    string $containerNames[] = {};
+                    clear $containerNames;
+
+                    for( $hyperNodeDestination in $hyperConnections )
+                    {
+                        if( nodeType( $hyperNodeDestination )=="container" )
+                        {
+                            $containerNames[$containerCount] = $hyperNodeDestination;
+                            $containerCount++;
+                        }
+                    }
+
+                    if( $containerCount>1 )
+                    {
+                        print(  " // WARNING: "+$hypName+" is connected to "+
+                                $containerCount+" containers\n" );
+                    }
+                    else if( !$containerCount )
+                    {
+                        print( " // WARNING: "+$hypName+
+                                " is not connected to a container\n" );
+                    }
+
+                    for( $container in $containerNames )
+                    {
+                        print( "\n // -----------------------------------------"+
+                                "---------------------------------\n" );
+                        print(  " // "+$hypName+" -> "+$container+"\n" );
+                        print(  " // -------------------------------------------"+
+                                "-------------------------------\n" );
+                    }
+
+                    $hyperCount++;
+                }
+            }
+        }
+    }
+
+    if( !$hyperCount )
+    {print( " // '"+$node+"' is not part of a container\n" );}
+
+    else if( $hyperCount>1 )
+    {
+        print(  " // WARNING: MORE THAN 1 HYPERLAYOUT NODE"+
+                " ATTACHED TO '"+$node+".message'"+"\n" );
+    }
+
+
+    // Print the connections.
+    //
+    int $maxIncomingSourceCount = 0;
+    int $maxOutgoingSourceCount = 0;
+
+    int $sizeDest   = size( $incomingDestination );
+    int $sizeSource = size( $outgoingDestination );
+
+    int $currentCount = 0;
+    for( $i=0; $i<$sizeDest; $i++ )
+    {
+        $currentCount = size( $incomingSource[$i] );
+        if( $maxIncomingSourceCount<$currentCount )
+        {$maxIncomingSourceCount = $currentCount;}
+    }
+
+    $currentCount = 0;
+    for( $i=0; $i<$sizeSource; $i++ )
+    {
+        $currentCount = size( $outgoingSource[$i] );
+        if( $maxOutgoingSourceCount<$currentCount )
+        {$maxOutgoingSourceCount = $currentCount;}
+    }
+
+    string $spaceIncoming[] = {};
+    for( $i=0; $i<$sizeDest; $i++ )
+    {
+        int $spaceCount = $maxIncomingSourceCount - size( $incomingSource[$i] );
+        int $k;
+        for( $k=0; $k<$spaceCount; $k++ )
+        {$spaceIncoming[$i] = $spaceIncoming[$i]+" ";}
+    }
+
+    string $spaceOutgoing[] = {};
+    for( $i=0; $i<$sizeSource; $i++ )
+    {
+        int $spaceCount = $maxOutgoingSourceCount - size( $outgoingSource[$i] );
+        int $k;
+        for( $k=0; $k<$spaceCount; $k++ )
+        {$spaceOutgoing[$i] = $spaceOutgoing[$i]+" ";}
+    }
+
+
+    print( "\n // '"+$node+"' as Destination:\n" );
+
+    for( $i=0; $i<$sizeDest; $i++ )
+    {
+        print(  " // "+$incomingSource[$i]+$spaceIncoming[$i]+"  ->  "+
+                $incomingDestination[$i]+"\n" );
+    }
+
+    print( "\n // '"+$node+"' asSource:\n" );
+
+    for( $i=0; $i<$sizeSource; $i++ )
+    {
+        print(  " // "+$outgoingSource[$i]+$spaceOutgoing[$i]+"  ->  "+
+                $outgoingDestination[$i]+"\n" );
+    }
+
+   print( "\n // -----------------------------------------"+
+           "---------------------------------\n" );
+}
+
+//______________________________________________________________
+//
