@@ -9,7 +9,7 @@
 // examples :
 //
 // sciCreateSetForNodeType( sciNodeType( ls( "-l", "-selection" ) ) );
-//
+// sciCreateSetForNodeType( sciNodeType( ls() ) );
 //______________________________________________________________________________
 //
 //
