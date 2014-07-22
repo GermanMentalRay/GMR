@@ -3,6 +3,9 @@
 //
 // Create for the input nodeTypes a set.
 //
+// For this script to work, the script : 'sciNodeType' is neccessary
+// if you want to get the input node list from the current selection list.
+//
 // examples :
 //
 // sciCreateSetForNodeType( sciNodeType( ls( "-l", "-selection" ) ) );
