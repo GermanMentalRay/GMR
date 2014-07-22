@@ -2,13 +2,10 @@
 // creator : sciloop
 //
 //
-//
-// creator sciloop
-//
 // This script returns from the list of input nodes
 // a string array with all nodeTypes.
 //
-// examples :
+// example :
 //
 // print( sciNodeType( ls( "-l", "-selection" ) ) );
 //
