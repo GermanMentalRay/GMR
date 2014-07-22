@@ -1,7 +1,7 @@
 # Mel Scripts
 
 -   *sciListNodeData:*	
-	Display all attributes, their type and values in the script editor. Also display whether its a multi/parent/child. 
+	1. Display all attributes, their type and values in the script editor. Also display whether its a multi/parent/child. 2. List all connection to and from the node. 3. Display the dirty status of all attributes.
 -   *sciCreateNode:*	
     	Create a node.
     	Select a container, if you want the node be a part of it. If the node is of type shape, also the parent transform will be included.
