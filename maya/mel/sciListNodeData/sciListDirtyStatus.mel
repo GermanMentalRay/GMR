@@ -1,0 +1,69 @@
+//
+// creator : sciloop
+//
+// last change : 2014_07_05
+//
+// examples :
+//
+// sciListDirtyStatus( ls( "-l", "-selection" ) );
+// sciListDirtyStatus({});
+//___________________________________________________________________________
+//
+//
+global proc sciListDirtyStatus( string $sel[] )
+{
+    string $sn = " // mel : 'sciListDirtyStatus' : ";
+
+    if( size($sel)==0 )
+    {$sel = ls( "-selection", "-l" );}
+
+    if( size($sel)==0 )
+    {
+        print( $sn+" nothing selected. Terminate script!\n" );
+        return;
+    }
+    if( !objExists( $sel[0] ) )
+    {
+        print( $sn+" the object : "+$sel[0]+" does not exist."+
+                " Terminate script!\n" );
+        return;
+    }
+
+
+    $sel = ls( "-l", $sel[0] );
+    string $node = $sel[0];
+
+
+    string $allAttr[] = attributeInfo( "-all", $node );
+    int $sizeAttr     = size( $allAttr );
+
+    for( $attr in $allAttr )
+    {
+        string $isDirtyDStr;
+        string $isDirtyCStr;
+        int $isDirtyD;
+        int $isDirtyC;
+
+        if( !catchQuiet( $isDirtyD = isDirty( "-d", $node+"."+$attr ) ) )
+        {
+            if( $isDirtyD==false )
+            {print( $attr+" datablock  is clean\n" );}
+            else
+            {print( $attr+" datablock  is DIRTY\n" );}
+        }
+
+        if( !catchQuiet( $isDirtyC = isDirty( "-c", $node+"."+$attr ) ) )
+        {
+            if( $isDirtyC==false )
+            {print( $attr+" connection is clean\n" );}
+            else
+            {print( $attr+" connection is clean\n" );}
+            print( "\n" );
+        }
+    }
+}
+
+//
+//___________________________________________________________________________
+//
+//
