@@ -1,6 +1,6 @@
 # Mel Scripts
 
--   *sciListAttributes:*	
+-   *sciListNodeData:*	
 	Display all attributes, their type and values in the script editor. Also display whether its a multi/parent/child. 
 -   *sciCreateNode:*	
     	Create a node.
