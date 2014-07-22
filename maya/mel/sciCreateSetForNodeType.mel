@@ -1,0 +1,72 @@
+//
+// creator : sciloop
+//
+// Create for the input nodeTypes a set.
+//
+// examples :
+//
+// sciCreateSetForNodeType( sciNodeType( ls( "-l", "-selection" ) ) );
+//
+//______________________________________________________________________________
+//
+//
+global proc sciCreateSetForNodeType( string $nodeTypes[] )
+{
+	string $sn = " // mel : 'sciCreateSetForNodeType' : ";
+
+	if( size($nodeTypes)==0 )
+	{
+		print( $sn+"input string array is empty. Select a node, please.\n" );
+		return;
+	}
+
+	for( $type in $nodeTypes )
+	{
+		string $objects[] = {};
+
+		if( catchQuiet( $objects = ls( "-type", $type ) ) )
+		{
+			print( $sn+"could not get objects for a nodeType named : '"+$type+"'.\n" );
+			continue;
+		}
+
+		string $setNode = "";
+		int $sciSuccess = false;
+		int $setExisted = false;
+
+		if( $type=="objectSet" )
+		{
+			print(	$sn+" Do not create sets for nodeType :"+
+					" 'objectSet'. Terminate script!\n" );
+			continue;
+		}
+
+		if( !objExists( ("set_all_"+$type+"_") ) )
+		{$setNode = createNode( "-n", "set_"+$type+"_", "objectSet" );}
+		else
+		{$setExisted = true;}
+
+		if( !catchQuiet( sets( "-include", $setNode, $objects ) ) )
+		{$sciSuccess = true;}
+
+		if( $sciSuccess==false )
+		{
+			// Set was newly created and addition of nodes failes,
+			// so, delete the set again.
+			//
+			if( $setExisted==false )
+			{delete $setNode;}
+		}
+		else
+		{
+			string $set_master = "set_master";
+			if( objExists( $set_master ) )
+			{catchQuiet( sets( "-include", $set_master, $setNode ) );}
+		}
+	}
+}
+
+//______________________________________________________________________________
+//
+//
+
