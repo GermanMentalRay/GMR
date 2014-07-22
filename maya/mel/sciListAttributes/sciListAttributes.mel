@@ -3,7 +3,8 @@
 //
 // last update: 2014_06_24
 //
-// Display all attributes and their values in the script editor.
+// Display all attributes,their values, types and whether they
+// are multi/parent/child in the script editor.
 //
 // examples :
 //
