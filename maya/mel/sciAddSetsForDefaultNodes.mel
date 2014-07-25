@@ -1,0 +1,285 @@
+//
+// We want to put all default Maya nodes in sets for easy access.
+// Default nodes which were not put in a specific set will be put
+// in the 'otherDefaultNodes' set.
+//
+//_________________________________________________________________________________
+//
+//
+global proc sciAddSetsForDefaultNodes()
+{
+	string $sn = " // sciloop message: mel :"+
+				" 'sciAddSetsForDefaultNodes' : ";
+
+	// Get the list of all existing nodes.
+	//
+	string $defaultNodeList[] = {};
+	if( catchQuiet( $defaultNodeList = ls( "-l" ) ) )
+	{
+		print(	$sn+" could not get list of default Maya nodes!\n" );
+		return;
+	}
+
+	// Create the array of sets.
+	// The first and second elements
+	// must not be changed.
+	//
+	// Create other sets here, if you want.
+	// Do not forget to also account for new sets
+	// when the data are put in the '$setContent' array.
+	//
+	string $set_names[] =
+	{
+		"set_defaultNodes",			// do not change
+		"set_defaultOtherNodes", 	// do not change
+		"set_defaultRenderNodes",
+		"set_defaultShadingNodes",
+		"set_defaultLightningNodes",
+		"set_defaultObjectMultiFilter",
+		"set_defaultObjectRenderFilter",
+		"set_defaultObjectTypeFilter",
+		"set_defaultSelectionListOperator"
+	};
+
+	// Create the list for the nodes which should go into
+	// the respective set.
+	//
+	string $shadingNodeList[] =
+	{
+		"shaderGlow1",        "strokeGlobals",       "particleCloud1",
+		"lambert1",           "initialParticleSE",   "initialShadingGroup",
+		"defaultShaderList1", "defaultTextureList1", "initialMaterialInfo"
+	};
+
+	string $lightningNodeList[] =
+	{
+		"lightLinker1",      "defaultObjectSet", "defaultLightSet",
+		"defaultLightList1", "lightList1"
+	};
+
+	string $renderNodeList[] =
+	{
+		"defaultResolution",            "postProcessList1",         "defaultRenderGlobals",
+		"defaultRenderQuality",         "defaultViewColorManager",  "defaultRenderUtilityList1",
+		"hardwareRenderGlobals",        "hardwareRenderingGlobals", "defaultRenderingList1",
+		"defaultHardwareRenderGlobals", "defaultRenderLayer",       "renderGlobalsList1",
+		"renderLayerManager"
+	};
+
+	string $objectMultiFilterList[]     = {};
+	string $objectRenderFilterList[]    = {};
+	string $objectTypeFilterList[]      = {};
+	string $selectionListOperatorList[] = {};
+	int $objectMultiFilterSuccess     = catchQuiet( $objectMultiFilterList     = ls( "-type", "objectMultiFilter" ) );
+	int $objectRenderFilterSuccess    = catchQuiet( $objectRenderFilterList    = ls( "-type", "objectRenderFilter" ) );
+	int $objectTypeFilterSuccess      = catchQuiet( $objectTypeFilterList      = ls( "-type", "objectTypeFilter" ) );
+	int $selectionListOperatorSuccess = catchQuiet( $selectionListOperatorList = ls( "-type", "selectionListOperator" ) );
+
+
+//----------------------------------------------------------------------
+
+	int $setCount = size( $set_names );
+
+	// Check the scene for the sets and create them if needed.
+	//
+	int $nodeCount[] = {};
+	int $set_AlreadyExists[] = {};
+	int $set_CreationFailed[] = {};
+
+	for( $i=0; $i<$setCount; $i++ )
+	{
+		$set_AlreadyExists[$i] = false;
+		$set_CreationFailed[$i] = false;
+		$nodeCount[$i] = 0;
+	}
+
+	for( $i=0; $i<$setCount; $i++ )
+	{
+		if( objExists( $set_names[$i]) )
+		{
+			if( nodeType($set_names[$i])=="objectSet" )
+			{
+				$set_AlreadyExists[$i] = true;
+
+				print( 	$sn+" '"+$set_names[$i]+"' already exists.\n" );
+			}
+			else
+			{
+				print(	$sn+" object with name :"+
+						" '"+$set_names[$i]+"', already exists,"+
+						" but is not of type 'objectSet'.\n" );
+			}
+		}
+
+		// Create the set node.
+		//
+
+		if( $set_AlreadyExists[$i]==false )
+		{
+			if( catchQuiet( $setResult =
+							sets( "-name", $set_names[$i] ) ) )
+			{
+				print(	$sn+"  could not create set : '"+
+						$set_names[$i]+"'.\n" );
+
+				$set_CreationFailed[$i] = true;
+
+				if( $i!=0 )
+				{
+					if( $set_CreationFailed[$i] = false )
+					{$set_names[$i] = $set_names[0] ;}
+				}
+			}
+		}
+	}
+
+
+//-------------------------------------------------------------------------------
+//
+	// Add to every set its specific nodes.
+	//
+	for( $i=0; $i<$setCount; $i++ )
+	{
+		if( $set_names[$i]=="set_defaultNodes" || $set_names[$i]=="set_defaultOtherNodes" )
+		{continue;}
+
+		// Add content to the set only if it was newly created
+		// or, if creation failed but creation of the 'set_defaultNodes'
+		// succeeded, add the content to that set.
+		//
+		if( (	$set_AlreadyExists[$i]==false &&
+				$set_CreationFailed[$i]==false ) ||
+			(	$set_AlreadyExists[0]==false &&
+				$set_CreationFailed[0]==false) )
+		{
+
+			// Mel does not have multidimensinal string arrays.
+			// So, we have to copy the node content of the specific
+			// arrays to the general setContent array.
+			//
+			string $setContent[] = {};
+
+			if( $set_names[$i]=="set_defaultRenderNodes" )
+			{
+				for( $m=0; $m<size($renderNodeList); $m++ )
+				{$setContent[size($setContent)] = $renderNodeList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultShadingNodes" )
+			{
+				for( $m=0; $m<size($shadingNodeList); $m++ )
+				{$setContent[size($setContent)] = $shadingNodeList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultLightningNodes" )
+			{
+				for( $m=0; $m<size($lightningNodeList); $m++ )
+				{$setContent[size($setContent)] = $lightningNodeList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultObjectMultiFilter" )
+			{
+				for( $m=0; $m<size($objectMultiFilterList); $m++ )
+				{$setContent[size($setContent)] = $objectMultiFilterList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultObjectRenderFilter" )
+			{
+				for( $m=0; $m<size($objectRenderFilterList); $m++ )
+				{$setContent[size($setContent)] = $objectRenderFilterList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultObjectTypeFilter" )
+			{
+				for( $m=0; $m<size($objectTypeFilterList); $m++ )
+				{$setContent[size($setContent)] = $objectTypeFilterList[$m];}
+			}
+			else if( $set_names[$i]=="set_defaultSelectionListOperator" )
+			{
+				for( $m=0; $m<size($selectionListOperatorList); $m++ )
+				{$setContent[size($setContent)] = $selectionListOperatorList[$m];}
+			}
+
+
+			// Add the nodes to the respective set.
+			//
+			for( $node in $setContent )
+			{
+				// In case we succeed in adding the current node
+				// to the current set, we do not want to put it
+				// in the defaultNodes set.
+				//
+				if( catchQuiet( sets( "-in", $set_names[$i], $node ) ) )
+				{
+					int $objExists = objExists( $node );
+
+					string $exists = " ";
+					if( $exists==true )
+					{$exists = " NOT ";}
+
+					print(	$sn+" could not add '"+$node+"' to '"+$set_names[$i]+
+							"'. Maya says the node DOES"+$exists+"exist.\n" );
+				}
+				else
+				{
+					string $tmpStr[] = { $node };
+					$defaultNodeList = stringArrayRemove( $tmpStr, $defaultNodeList );
+					$nodeCount[$i] = $nodeCount[$i]+1;
+				}
+			}
+
+			print(	$sn+" node : '"+$set_names[$i]+"'"+
+					" with "+$nodeCount[$i]+
+					" default Maya shading nodes created.\n" );
+		}
+	}
+
+
+	if( (	$set_AlreadyExists[1]==false &&
+			$set_CreationFailed[1]==false ) ||
+		(	$set_AlreadyExists[0]==false &&
+			$set_CreationFailed[0]==false ) )
+	{
+		// Add all remaining default nodes to the set.
+		//
+
+		for( $node in $defaultNodeList )
+		{
+			if( !catchQuiet( sets( "-in", $set_names[1], $node ) ) )
+			$nodeCount[1] = $nodeCount[1]+1;
+		}
+
+		print(	$sn+" node : '"+$set_names[1]+"'"+
+				" with "+$nodeCount[1]+" default Maya nodes created.\n" );
+	}
+
+//-------------------------------------------------------------------------------
+
+	if( $set_AlreadyExists[0]==true ||
+		$set_CreationFailed[0]==true )
+	{return;}
+
+	// Add the sets to the 'set_defaultNodes' set.
+	//
+	for( $i=0; $i<$setCount; $i++ )
+	{
+		if( $set_AlreadyExists[$i]==false &&
+			$set_CreationFailed[$i]==false )
+		{
+			if( catchQuiet( sets(	"-in", $set_names[0],
+									$set_names[$i] ) ) )
+			{
+				print( $sn+" could not add set : '"+$set_names[$i]+
+						"'' to '"+$set_names[0]+"'\n" );
+			}
+		}
+	}
+
+	int $totalNodeCount = 0;
+
+	for( $i=0; $i<size($nodeCount); $i++ )
+	{$totalNodeCount+=$nodeCount[$i];}
+
+	print(	$sn+" node : '"+$set_names[0]+
+			"' with "+$totalNodeCount+
+			" default Maya nodes created.\n" );
+
+}
+
+//_________________________________________________________________________________
+
