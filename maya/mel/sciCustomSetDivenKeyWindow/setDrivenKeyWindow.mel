@@ -21,11 +21,12 @@
 
 //#############################################
 //
-// sciloop : rason for overwrite :
+// sciloop : reason for overwrite :
 // support for driven keys with animLayers.
 //
 if( exists( "sciSetDrivenKeyWindowAdditions" ) )
 {source "sciSetDrivenKeyWindowAdditions.mel";}
+
 
 //#############################################
 //
