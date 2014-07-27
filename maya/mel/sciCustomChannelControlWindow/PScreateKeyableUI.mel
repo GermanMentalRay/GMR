@@ -42,7 +42,6 @@
 //  Return Value:
 //      None.
 //
-//
 global proc PSupdateKeyableUI ( string $parent, string $selectedItem )
 //
 // Setup the two lists of attributes - those that
