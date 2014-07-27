@@ -8,15 +8,6 @@
 // animation layers.
 //
 //________________________________________________________________________________
-
-//string $attribute[]      = `animLayer -q -attribute       AnimLayer2`;
-//string $animCurve[]      = `animLayer -q -animCurves      AnimLayer2`;
-//string $blendNode[]      = `animLayer -q -blendNodes      AnimLayer2`;
-//int $selectet            = `animLayer -q -selected        AnimLayer2`;
-//int $exists              = `animLayer -q -exists          AnimLayer2`;
-//string $affectedLayers[] = `animLayer -q -affectedLayers `;
-
-//________________________________________________________________________________
 //
 //
 global proc sciSetDrivenKeyWindowAdditionsSourced()
