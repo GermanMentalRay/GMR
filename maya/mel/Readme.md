@@ -1,4 +1,5 @@
 # Mel Scripts
++Descriptions are in the files as well+
 
 -   *sciListNodeData:*	
 	1. Display all attributes, their type and values in the script editor. Also display whether its a multi/parent/child. 2. List all connection to and from the node. 3. Display the dirty status of all attributes.
