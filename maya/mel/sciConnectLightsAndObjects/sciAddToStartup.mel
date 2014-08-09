@@ -1,0 +1,111 @@
+//
+// scripts which change the Maya scripts in the 'startup' folder.
+//
+//_____________________________________________________________________________
+//
+// Add filters to the default Maya filters.
+//
+global proc int sciAddToInitDefaultFilters(	string $objectFilter[],
+											int $objectFilterIndex )
+{
+
+	// My own filters here:
+	//
+	string $sciAllNodeTypes[] = allNodeTypes( "-ia" );
+
+	//	instancers
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+			"-byType",			"instancer",
+			"-text",			"sciInstancerFilter",
+			"-category",		"Modeling",
+			"-classification",	"user",
+			"sciInstancerFilter" );
+
+	// geometry with instancer
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+			"-byType",			"nurbsSurface",
+			"-byType",			"nurbsCurve",
+			"-byType",			"mesh",
+			"-byType",			"instancer",
+			"-byType",			"subdiv",
+			"-text",			"sciGeometryFilter",
+			"-category",		"Modeling",
+			"-classification",	"user",
+			"sciGeometryFilter" );
+
+
+	// All renderable object types
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+			"-byType",			"nurbsSurface",
+			"-byType",			"mesh",
+			"-byType",			"subdiv",
+			"-byType",			"instancer",
+			"-byType",			"particle",
+			"-text",			"sciRenderableObjectShapeFilter",
+			"-category",		"Render",
+			"-classification",	"user",
+			"sciRenderableObjectShapeFilter" );
+
+
+	// All non DAG, non Sets, not Container types
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+			"-byType",			"dagNode",
+			"-byType",			"container",
+			"-byType",			"dagContainer",
+			"-byType",			"partition",
+			"-byType",			"objectSet",
+			"-text", 			"sciNodeFilter",
+			"-category",		"Modeling",
+			"-classification",	"user",
+			"sciNodeFilter" );
+
+		itemFilter( "-edit", "-negate", true, "sciNodeFilter" );
+
+	// All DAG
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+			"-byType",			"dagNode",
+			"-text", 			"sciDagFilter",
+			"-category",		"Modeling",
+			"-classification",	"user",
+			"sciDagFilter" );
+
+
+	// All containers and sets
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+		"-byType",			"container",
+		"-byType",			"dagContainer",
+		"-byType",			"partition",
+		"-byType",			"objectSet",
+		"-text",			"sciContainerSetFilter",
+		"-category",		"Modeling",
+		"-classification",	"user",
+		"sciContainerSetFilter" );
+
+	// All containers
+	//
+	$objectFilter[$objectFilterIndex++] =
+		itemFilter(
+		"-byType",			"container",
+		"-byType",			"dagContainer",
+		"-text",			"sciContainerFilter",
+		"-category",		"Modeling",
+		"-classification",	"user",
+		"sciContainerFilter" );
+
+}
+
+//_____________________________________________________________________________
+//
+//
