@@ -1,0 +1,61 @@
+//
+// creator: sciloop
+//
+// Show in the channel box all relevant transform attributes.
+// Select the transform nodes.
+//
+// last changed: 2013_05_12
+//
+//_______________________________________________________________________________
+//
+//
+global proc sciDisplayCameraAttributesInChannelBox()
+{
+
+	string $sn = " // script : 'sciDisplayCameraAttributesInChannelBox' : ";
+
+	// Set the camera attributes
+	//
+	string $cameraAttributes[] =
+	{
+		"angleOfView",          "cameraScale",
+		"nearClipPlane",	    "farClipPlane",
+		"filmGate",
+		"filmAspectRatio",
+		"fitResolutionGate",
+		"filmFitOffset",        "horizontalFilmOffset", "verticalFilmOffset",
+		"shakeEnabled",         "horizontalShake",      "verticalShake",
+		"shakeOverscanEnabled", "shakeOverscan",
+		"preScale",
+		"filmTranslateH",       "filmTranslateV",
+		"horizontalRollPivot",  "verticalRollPivot",
+		"filmRollValue",
+		"filmRollOrder",
+		"postScale",
+		"depthOfField",         "focusRegionScale",
+		"tumblePivotX",         "tumblePivotY",         "tumblePivotZ",
+		"usePivotAsLocalSpace",
+		"orthographic",         "orthographicWidth"
+	};
+
+	string $sel[] = sciGetSelectedNodeTypes( {"camera"} );
+
+	if( size($sel)==0 )
+	{
+		print( $sn+" Select at least one camera node, please.\n" );
+		return;
+	}
+
+	for( $camera in $sel )
+	{
+		for( $attr in $cameraAttributes )
+		{catchQuiet( setAttr( "-k", 1, ($camera+"."+$attr) ) );}
+	}
+
+	print( $sn+" done!\n" );
+
+}
+
+//_______________________________________________________________________________
+//
+//
