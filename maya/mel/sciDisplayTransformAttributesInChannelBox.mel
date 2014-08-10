@@ -1,0 +1,47 @@
+//
+// Show in the channel box all relevant transform attributes.
+// Select the transform nodes.
+//
+//_______________________________________________________________________________________________
+//
+//
+global proc sciDisplayTransformAttributesInChannelBox()
+{
+
+	string $sn = " // sciloop message: mel: 'sciDisplayTransformAttributesForSeleced' :";
+
+	// Set the transform attributes
+	//
+	string $transformAttributes[] =
+	{
+		"rotateOrder",
+		"rotateAxisX",				"rotateAxisY",				"rotateAxisZ",
+		"rotatePivotTranslateX",	"rotatePivotTranslateY",	"rotatePivotTranslateZ",
+		"rotatePivotX",				"rotatePivotY",				"rotatePivotZ",
+		"scalePivotTranslateX",		"scalePivotTranslateY",		"scalePivotTranslateZ",
+		"scalePivotX",				"scalePivotY",				"scalePivotZ",
+		"shearXY",					"shearXZ",					"shearXY",
+		"rotateQuaternionW",		"rotateQuaternionX",		"rotateQuaternionY",
+		"rotateQuaternionZ"
+	};
+
+	string $sel[] = sciGetSelectedNodeTypes( {"transform"} );
+
+	if( size($sel)==0 )
+	{
+		print( $sn+" Select at least one transform node, please.\n" );
+		return;
+	}
+
+	for( $transform in $sel )
+	{
+		for( $attr in $transformAttributes )
+		{catchQuiet( setAttr( "-k", 1, $transform+"."+$attr ) );}
+	}
+
+	print( $sn+" done!\n" );
+
+}
+
+//_______________________________________________________________________________________________
+//
