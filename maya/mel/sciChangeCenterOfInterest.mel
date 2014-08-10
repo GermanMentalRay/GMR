@@ -1,0 +1,105 @@
+//
+// creator: sciloop
+//
+// Change the current cameras center of interest. Create hotkeys for
+// the various scripts. Also change the step size for
+// increasing/decreasing the distance.
+// Currently, the step size is set to be 100 cm.
+//
+// The current distance is displayed.
+// Unfortunately, the 'headsUpMessage' is a very slow command, so it takes
+// some time.
+//
+// last changed : 2013_06_05
+//
+//________________________________________________________________________
+//
+//
+global int $g_sciCenterOfInterestStepSize;
+$g_sciCenterOfInterestStepSize = 100;
+
+//________________________________________________________________________
+//
+//
+global proc sciChangeCenterOfInterestSourced()
+{
+	print(	" // sciloop message: mel:" +
+			" file \"sciChangeCenterOfInterest.mel\" sourced.\n" );
+}
+sciChangeCenterOfInterestSourced();
+
+//________________________________________________________________________
+//
+//
+global proc sciIncreaseCenterOfInterestStepSize()
+{
+	global int $g_sciCenterOfInterestStepSize;
+	$g_sciCenterOfInterestStepSize+=100;
+	headsUpMessage(	"-time", 0.5,
+					("increase stepSize: "+$g_sciCenterOfInterestStepSize) );
+}
+
+//________________________________________________________________________
+//
+//
+global proc sciDecreaseCenterOfInterestStepSize()
+{
+	global int $g_sciCenterOfInterestStepSize;
+	$g_sciCenterOfInterestStepSize-=100;
+
+	if( $g_sciCenterOfInterestStepSize<0 )
+	{$g_sciCenterOfInterestStepSize = 0;}
+
+	headsUpMessage(	"-time", 0.5,
+					("decrease stepSize: "+$g_sciCenterOfInterestStepSize) );
+}
+
+//________________________________________________________________________
+//
+//
+global proc sciDecreaseCenterOfInterest()
+{
+	global int $g_sciCenterOfInterestStepSize;
+	$g_sciCenterOfInterestStepSize =
+		abs( $g_sciCenterOfInterestStepSize )*(-1);
+
+	sciChangeCenterOfInterest();
+}
+
+//________________________________________________________________________
+//
+//
+global proc sciIncreaseCenterOfInterest()
+{
+	global int $g_sciCenterOfInterestStepSize;
+	$g_sciCenterOfInterestStepSize =
+		abs( $g_sciCenterOfInterestStepSize );
+
+	sciChangeCenterOfInterest();
+}
+
+//________________________________________________________________________
+//
+//
+global proc sciChangeCenterOfInterest()
+{
+	global int $g_sciCenterOfInterestStepSize;
+
+	string $panelFocus = getPanel( "-wf" );
+
+	if( getPanel( "-to", $panelFocus )=="modelPanel" )
+	{
+		string $camName = modelEditor( "-q", "-camera", $panelFocus );
+		float $newCoi = getAttr( ($camName+".centerOfInterest") ) +
+									$g_sciCenterOfInterestStepSize;
+		if( $newCoi<0.001 )
+		{ $newCoi = 0.001; }
+		setAttr( ($camName+".centerOfInterest"), $newCoi );
+		headsUpMessage( "-time", 0.5, ("coi: "+$newCoi) );
+	}
+}
+
+//________________________________________________________________________
+//
+//
+
