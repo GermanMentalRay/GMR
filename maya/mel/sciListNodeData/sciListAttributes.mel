@@ -1,7 +1,7 @@
 //
 // creator : sciloop
 //
-// last update: 2014_06_24
+// last update: 2014_08_17
 //
 // Display all attributes,their values, types and whether they
 // are multi/parent/child in the script editor.
@@ -29,7 +29,7 @@ proc string sciGetAttrVal(  string $type,
                 $type=="short"          || $type=="float"       || $type=="floatLinear" )
     {
         if( catchQuiet( $value = getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "error retrieving double value for : "+$fullName;}
 
         else if( $type=="string" )
         {$value = "'"+$value+"'";}
@@ -59,7 +59,7 @@ proc string sciGetAttrVal(  string $type,
         float $mat[] = {};
 
         if( catchQuiet( $mat = getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "error retrieving matrix value for : "+$fullName;}
         else
         {
             int $matSize = size( $mat );
@@ -87,7 +87,7 @@ proc string sciGetAttrVal(  string $type,
         float $valueFloat[] = {};
 
         if( catchQuiet( $valueFloat = getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "error retrieving float value for : "+$fullName;}
         else
         {
             int $size = size( $valueFloat );
@@ -116,7 +116,7 @@ proc string sciGetAttrVal(  string $type,
         int $valueInt[] = {};
 
         if( catchQuiet( $valueIntFloat = getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "error retrieving int value for : "+$fullName;}
         else
         {
             int $size = size( $valueInt );
@@ -141,7 +141,7 @@ proc string sciGetAttrVal(  string $type,
     {
         string $valueString[] = {};
         if( catchQuiet( $valueString = getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "not displayable for type : "+$type;}
         else
         {
             int $size = size( $valueString );
@@ -165,7 +165,7 @@ proc string sciGetAttrVal(  string $type,
     else
     {
         if( catchQuiet( getAttr( $fullName ) ) )
-        {$value = "not displayable";}
+        {$value = "not displayable for type : "+$type;}
         else
         {
             if( !catchQuiet( $valueString = getAttr( $fullName ) ) )
@@ -189,7 +189,7 @@ proc string sciGetAttrVal(  string $type,
                 }
             }
             else
-            {$value = "not displayable";}
+            {$value = "not displayable for type : "+$type;}
         }
 
     }
@@ -277,7 +277,7 @@ global proc sciListAttributes( string $sel[] )
 
         string $void0 = "";
         int $max0 = 60;
-        int $max1 = 22;
+        int $max1 = 26;
         string $void1 = "";
         string $type = "";
         string $fullName = "";
@@ -298,6 +298,8 @@ global proc sciListAttributes( string $sel[] )
         else
         {$isMultiString = "noMulti  ";}
 
+        string $prefix = "";
+
         if( attributeExists( $allAttr[$i], $node ) )
         {
             // case: NO mult, NO parent, NO child:
@@ -306,17 +308,25 @@ global proc sciListAttributes( string $sel[] )
             {
                 $isElementString = "noElement ";
 
-                //int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
                 int $failed = catchQuiet( $type = attributeQuery(   "-node", $node,
                                                                     "-attributeType", $allAttr[$i] ) );
 
-                if( $failed )
+                if( !$failed && $type=="typed" )
+                {
+                    $prefix = $type+" : ";
+                    catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
+                }
+
+                if( $failed==true )
+                {$failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );}
+
+                if( $failed==true )
                 {$type = "cannot retrieve type";}
 
                 if( $type=="" )
                 {$type = "empty return type";}
 
-                int $typeLength = size( $type );
+                int $typeLength = size( $type ) + size( $prefix );
 
                 for( $m=0; $m<($max1-$typeLength); $m++ )
                 {$void1 = $void1+" ";}
@@ -333,7 +343,7 @@ global proc sciListAttributes( string $sel[] )
                 else
                 {$isParentString = "yesParent";}
 
-                print(  $startVoid+$allAttr[$i]+$void0+$type+$void1+
+                print(  $startVoid+$allAttr[$i]+$void0+$prefix+$type+$void1+
                         $isElementString+" "+$isParentString+" "+
                         $isChildString+" "+$value+"\n" );
             }
@@ -355,9 +365,17 @@ global proc sciListAttributes( string $sel[] )
 
                 if( $sizeElem==0 )
                 {
-                    //int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
                     int $failed = catchQuiet( $type = attributeQuery(   "-node", $node,
                                                                         "-attributeType", $allAttr[$i] ) );
+
+                    if( !$failed && $type=="typed" )
+                    {
+                        $prefix = $type+" : ";
+                        catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
+                    }
+
+                    if( $failed==true )
+                    {$failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );}
 
                     if( $failed )
                     {$type = "cannot retrieve type";}
@@ -365,7 +383,7 @@ global proc sciListAttributes( string $sel[] )
                     if( $type=="" )
                     {$type = "empty return type";}
 
-                    int $typeLength = size( $type );
+                    int $typeLength = size( $type ) + size( $prefix );;
 
                     for( $m=0; $m<($max1-$typeLength); $m++ )
                     {$void1 = $void1+" ";}
@@ -383,7 +401,7 @@ global proc sciListAttributes( string $sel[] )
                     {$isParentString = "yesParent";}
 
                     $value = "";
-                    print(  $startVoid+$allAttr[$i]+$void0+$type+$void1+
+                    print(  $startVoid+$allAttr[$i]+$void0+$prefix+$type+$void1+
                             $isElementString+" "+$isParentString+" "+
                             $isChildString+" "+$value+"\n" );
                 }
@@ -442,9 +460,17 @@ global proc sciListAttributes( string $sel[] )
 
                     // Get character count of attribute type.
                     //
-                    //int $failed = catchQuiet( $type = getAttr( "-type", $node+"."+$elements[$k]) );
                     int $failed = catchQuiet( $type = attributeQuery(   "-node", $node,
                                                                         "-attributeType", $pureAttr ) );
+
+                    if( !$failed && $type=="typed" )
+                    {
+                        $prefix = $type+" : ";
+                        catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );
+                    }
+
+                    if( $failed==true )
+                    {$failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );}
 
                     if( $failed )
                     {$type = "cannot retrieve type";}
@@ -452,14 +478,15 @@ global proc sciListAttributes( string $sel[] )
                     if( $type=="" )
                     {$type = "empty return type";}
 
-                    int $typeLength = size( $type );
+                    int $typeLength = size( $type ) + size( $prefix );
+
                     for( $m=0; $m<($max1-$typeLength); $m++ )
                     {$void1 = $void1+" ";}
 
                     $value = sciGetAttrVal( $type,
                                             $node+"."+$elements[$k] );
 
-                    print(  $startVoid+$elements[$k]+$void0+$type+
+                    print(  $startVoid+$elements[$k]+$void0+$prefix+$type+
                             $void1+$isElementString+$isParentString+
                             $isChildString+$value+"\n" );
                 }
@@ -484,6 +511,9 @@ global proc sciListAttributes( string $sel[] )
 
             int $failed = catchQuiet( $type = attributeQuery(   "-node", $node,
                                                                 "-attributeType", $allAttr[$i] ) );
+
+            if( $type=="typed" )
+            {$failed = catchQuiet( $type = getAttr( "-type", $node+"."+$allAttr[$i] ) );}
 
             if( $failed )
             {$type = "cannot retrieve type";}
