@@ -24,7 +24,7 @@ global proc sciDisplayCameraAttributesInChannelBox( string $inputArray[] )
 		if( size($inputArray)==0 )
 		{
 			string $sel[] = ls( "-sl" );
-			if( size($sel)!=0) )
+			if( size($sel)!=0 )
 			{
 				print( $sn+" selection has no camera"+
 				" nodeTypes. Terminate script!\n" );
