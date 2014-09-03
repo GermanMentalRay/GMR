@@ -4,16 +4,61 @@
 // Show in the channel box all relevant transform attributes.
 // Select the transform nodes.
 //
-// last changed: 2013_02_07
+// last changed: 2014_09_04
 //
-//_______________________________________________________________________________________________
+// sciDisplayTransformAttributesInChannelBox( {} );
+//
+//____________________________________________________________________
 //
 //
-global proc sciDisplayTransformAttributesInChannelBox()
+global proc sciDisplayTransformAttributesInChannelBox( string $inputArray[] )
 {
 
-	string $sn = " // sciloop message: mel: 'sciDisplayTransformAttributesForSeleced' :";
+	string $sn = " // sciloop message: mel:"+
+				" 'sciDisplayTransformAttributesForSeleced' :";
 
+	if( size($inputArray)==0 )
+	{
+		$inputArray = sciGetSelectedNodeTypes( {"transform"}, {} );
+
+		if( size($inputArray)==0 )
+		{
+			string $sel[] = ls( "-sl" );
+			if( size($sel!=0) )
+			{
+				print( $sn+" selection has no transform"+
+				" nodeTypes. Terminate script!\n" );
+				return;
+			}
+
+			string $types[] = nodeType( "-derived", "-isTypeName", "transform" );
+
+			if( size($types)==0 )
+			{
+				print( $sn+" there is absolutely no transform type"+
+						" in the scene. Terminate script!\n" );
+				return;
+			}
+
+			for( $type in $types )
+			{
+				string $objects[] = {};
+
+				if( catchQuiet($objects = lsType($type)) )
+				{
+					print( $sn+" could not get objects for a"+
+						" nodeType named : '"+$type+"'.\n" );
+
+					continue;
+				}
+
+				$inputArray = stringArrayCatenate( $inputArray, $objects );
+
+			}
+		}
+	}
+
+print( $inputArray );
 	// Set the transform attributes
 	//
 	string $transformAttributes[] =
@@ -29,15 +74,7 @@ global proc sciDisplayTransformAttributesInChannelBox()
 		"rotateQuaternionZ"
 	};
 
-	string $sel[] = sciGetSelectedNodeTypes( {"transform"} );
-
-	if( size($sel)==0 )
-	{
-		print( $sn+" Select at least one transform node, please.\n" );
-		return;
-	}
-
-	for( $transform in $sel )
+	for( $transform in $inputArray )
 	{
 		for( $attr in $transformAttributes )
 		{catchQuiet( setAttr( "-k", 1, $transform+"."+$attr ) );}
@@ -47,5 +84,5 @@ global proc sciDisplayTransformAttributesInChannelBox()
 
 }
 
-//_______________________________________________________________________________________________
+//_____________________________________________________________________
 //
