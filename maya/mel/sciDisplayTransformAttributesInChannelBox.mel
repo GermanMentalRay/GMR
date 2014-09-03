@@ -15,7 +15,7 @@ global proc sciDisplayTransformAttributesInChannelBox( string $inputArray[] )
 {
 
 	string $sn = " // sciloop message: mel:"+
-				" 'sciDisplayTransformAttributesForSeleced' :";
+				" 'sciDisplayTransformAttributesInChannelBox' :";
 
 	if( size($inputArray)==0 )
 	{
