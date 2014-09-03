@@ -58,7 +58,7 @@ global proc sciDisplayTransformAttributesInChannelBox( string $inputArray[] )
 		}
 	}
 
-print( $inputArray );
+
 	// Set the transform attributes
 	//
 	string $transformAttributes[] =
