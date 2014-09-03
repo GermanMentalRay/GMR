@@ -4,15 +4,58 @@
 // Show in the channel box all relevant transform attributes.
 // Select the transform nodes.
 //
-// last changed: 2013_05_12
+// last changed: 2014_09_04
+//
+// sciDisplayCameraAttributesInChannelBox( {} );
 //
 //_______________________________________________________________________________
 //
 //
-global proc sciDisplayCameraAttributesInChannelBox()
+global proc sciDisplayCameraAttributesInChannelBox( string $inputArray[] )
 {
 
-	string $sn = " // script : 'sciDisplayCameraAttributesInChannelBox' : ";
+	string $sn = " // sciloop message : mel :"+
+				" 'sciDisplayCameraAttributesInChannelBox' :";
+
+	if( size($inputArray)==0 )
+	{
+		$inputArray = sciGetSelectedNodeTypes( {"camera"}, {} );
+
+		if( size($inputArray)==0 )
+		{
+			string $sel[] = ls( "-sl" );
+			if( size($sel!=0) )
+			{
+				print( $sn+" selection has no camera"+
+				" nodeTypes. Terminate script!\n" );
+				return;
+			}
+
+			string $types[] = nodeType( "-derived", "-isTypeName", "camera" );
+
+			if( size($types)==0 )
+			{
+				print( $sn+" there is absolutely no camera type"+
+						" in the scene. Terminate script!\n" );
+				return;
+			}
+
+			for( $type in $types )
+			{
+				string $objects[] = {};
+
+				if( catchQuiet($objects = lsType($type)) )
+				{
+					print( $sn+" could not get objects for a"+
+						" nodeType named : '"+$type+"'.\n" );
+
+					continue;
+				}
+
+				$inputArray = stringArrayCatenate( $inputArray, $objects );
+			}
+		}
+	}
 
 	// Set the camera attributes
 	//
@@ -38,18 +81,10 @@ global proc sciDisplayCameraAttributesInChannelBox()
 		"orthographic",         "orthographicWidth"
 	};
 
-	string $sel[] = sciGetSelectedNodeTypes( {"camera"} );
-
-	if( size($sel)==0 )
-	{
-		print( $sn+" Select at least one camera node, please.\n" );
-		return;
-	}
-
-	for( $camera in $sel )
+	for( $camera in $inputArray )
 	{
 		for( $attr in $cameraAttributes )
-		{catchQuiet( setAttr( "-k", 1, ($camera+"."+$attr) ) );}
+		{catchQuiet( setAttr( "-k", 1, $camera+"."+$attr ) );}
 	}
 
 	print( $sn+" done!\n" );
