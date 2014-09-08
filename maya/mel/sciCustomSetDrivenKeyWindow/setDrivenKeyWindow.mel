@@ -343,7 +343,7 @@ global proc generateSetDrivenCommand( )
 
             $cmd = sciCreateCommandForSetDrivenKeyWindow(   $cmd,
                                                             $drivenNode,
-                                                            $drivenChannel[$i] );
+                                                            $drivenChannel[$j] );
 
 //#########################################################################################
 
