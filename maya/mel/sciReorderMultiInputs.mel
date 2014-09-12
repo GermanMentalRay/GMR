@@ -1,0 +1,843 @@
+//
+// creator : sciloop
+//
+// Reorder nodes connected to multi attributes.
+// Not only for sets but every node with multi
+// attributes.
+//
+// sciReorderMultiInputs();
+//
+//_______________________________________________________
+//
+// Split the sources array into character and number arrays.
+//
+global proc sciSplitCharactersAndNumbers(   string $sources[],
+                                            string $characters[],
+                                            string $numbers[],
+                                            int $location )
+{
+    for( $source in $sources )
+    {
+        int $size = size( $source );
+
+        // 1 = first letter, 2 = last letter
+        // First letter is actually the second letter.
+        // A number can never be at the first position.
+        //
+        int $loc;
+
+        // front
+        //
+        if( $location==1 )
+        {$loc = 2;}
+
+        // back
+        //
+        else if( $location==2 )
+        {$loc = $size;}
+
+        if( $size>1 )
+        {
+            string $match = "";
+            $match = match( "[0-9]+", substring(    $source,
+                                                    $loc,
+                                                    $loc ) );
+            if( $match!="" )
+            {
+                $match = match( "[0-9]+", substring(    $source,
+                                                        $loc-1,
+                                                        $loc-1 ) );
+
+                if( $match=="_" )
+                {$numbers[size($numbers)] = $source;}
+                else
+                {$characters[size($characters)] = $source;}
+            }
+            else
+            {$characters[size($characters)] = $source;}
+        }
+        else
+        {$characters[size($characters)] = $source;}
+    }
+}
+
+//_______________________________________________________
+//
+//
+global proc int sciSortStringArrayAscendingBasedOnFrontNumber( string $sources[] )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciSortAscendingBasedOnFrontNumber' :";
+
+    int $ints[] = {};
+
+    // Get the first occurrence of a number,
+    // convert it to a 'int' and put it in the array.
+    //
+    for( $i=0; $i<size($sources); $i++ )
+    {
+        string $match = match( "[0-9]+", $sources[$i] );
+
+        if( $match=="" )
+        {
+            print( $sn+" error : '"+$sources[$i]+
+                "' has no number in its name. Terminate script!\n" );
+            return false;
+        }
+
+        $ints[$i] = $match;
+
+    }
+
+    string $tmp[] = {};
+    int $maxInt = maxint();
+
+    // Sort the array ascending
+    //
+    while( size($ints)!=0 )
+    {
+        int $smallest = $maxInt;
+        int $index = -1;
+
+        for( $i=0; $i<size($ints); $i++ )
+        {
+            if( $ints[$i]<$smallest )
+            {
+                $smallest = $ints[$i];
+                $index = $i;
+            }
+        }
+
+        // Add the found smallest element.
+        //
+        $tmp[size($tmp)] = $smallest;
+
+        // Delete the array element we found to be
+        // the smallest.
+        //
+        intArrayRemoveAtIndex( $index, $ints );
+    }
+
+    // Convert the true array to the new ordering.
+    //
+    string $newOrder[] = {};
+    int $isOccupied[] = {};
+
+    for( $i=0; $i<size($sources); $i++ )
+    {$isOccupied[$i] = false;}
+
+    for( $i=0; $i<size($sources); $i++ )
+    {
+        string $match = match( "[0-9]+", $sources[$i] );
+
+        for( $k=0; $k<size($tmp); $k++ )
+        {
+            if( $tmp[$k]==$match )
+            {
+                int $doBreak = false;
+
+                while( 1 )
+                {
+                    if( $isOccupied[$k]==true )
+                    {$k++;}
+                    else
+                    {
+                        $isOccupied[$k] = true;
+                        $newOrder[$k] = $sources[$i];
+                        $doBreak = true;
+                        break;
+                    }
+                }
+
+                if( $doBreak==true )
+                {break;}
+            }
+        }
+    }
+
+    $sources = $newOrder;
+
+    return true;
+}
+
+//_______________________________________________________
+//
+//
+global proc string sciInvertStringKeepNumberOrientation( string $string )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciInvertStringKeepNumberOrientation' :";
+
+
+    int $size = size( $string );
+
+    // Find potential start and end numbers-
+    //
+    int $lastLetter = $size;
+    for( $i=$size-1; $i>=0; $i-- )
+    {
+        if( match( "[0-9]+", substring($string, $i+1, $i+1) )=="" )
+        {
+            $lastLetter = $i;
+            break;
+        }
+    }
+
+    int $firstLetter = 0;
+    for( $i=0; $i<$size; $i++ )
+    {
+        if( match( "[0-9]+", substring($string, $i+1, $i+1) )=="" )
+        {
+            $firstLetter = $i;
+            break;
+        }
+    }
+
+    // Get the complete numbers.
+    //
+    string $firstNumberPart = "";
+    if( $firstLetter!=0 )
+    {$firstNumberPart = substring( $string, 1, $firstLetter );}
+
+    string $lastNumberPart = "";
+    if( $lastLetter+1!=$size )
+    {$lastNumberPart = substring( $string, $lastLetter+2, $size );}
+
+    // Get the complete letter part.
+    //
+    string $letterPart = substring( $string, $firstLetter+1, $lastLetter+1 );
+
+    // Invert the letter part.
+    //
+    string $array[] = {};
+
+    for( $i=size($letterPart)-1, $k=0; $i>=0; $i-- )
+    {$array[$k++] = substring( $letterPart, $i+1, $i+1 );}
+
+    $letterPart = stringArrayToString( $array, "" );
+
+    // Reform the string and return it.
+    //
+    return $lastNumberPart+$letterPart+$firstNumberPart;
+}
+
+//_______________________________________________________
+//
+//
+global proc int sciSortNumbersLocationBased(    string $sources[],
+                                                int $location )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciSortNumbersLocationBased' :";
+
+    // front
+    //
+    if( $location==1 )
+    {
+        if( !sciSortStringArrayAscendingBasedOnFrontNumber($sources) )
+        {return false;}
+    }
+
+    // back
+    //
+    else if( $location==2 )
+    {
+        // invert the node name
+        //
+        string $tmp0[] = {};
+        for( $i=0; $i<size($sources); $i++ )
+        {
+            if( $sources[$i]!="" )
+            {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $sources[$i] );}
+        }
+
+        // sort
+        //
+        if( !sciSortStringArrayAscendingBasedOnFrontNumber($tmp0) )
+        {return false;}
+
+        // invert back
+        //
+        for( $i=0; $i<size($tmp0); $i++ )
+        {
+            if( $tmp0[$i]!="" )
+            {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $tmp0[$i] );}
+        }
+
+        $sources = $tmp0;
+    }
+
+    return true;
+}
+
+//_______________________________________________________
+//
+// sort based on front or back character
+//
+global proc int sciSortCharactersLocationBased( string $sources[],
+                                                int $location )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciSortCharactersLocationBased' :";
+
+    // Sort the array : front character.
+    //
+    if( $location==1 )
+    {
+        // Sort the array.
+        //
+        $sources = sort( $sources );
+
+        // Resort if we have nodes with identical name
+        // but numbers at the names`end.
+        //
+
+        // Create array with nodes which have numbers
+        // at their end without these numbers.
+        //
+        string $sourceNoNumber[] = {};
+
+        for( $i=0; $i<size($sources); $i++ )
+        {
+            int $size = size( $sources[$i] );
+            int $lastLetter = $size;
+
+            for( $k=$size-1; $k>=0; $k-- )
+            {
+                if( match( "[0-9]+", substring($sources[$i], $k+1, $k+1) )=="" )
+                {
+                    $lastLetter = $k;
+                    break;
+                }
+            }
+
+            if( $lastLetter+1!=$size )
+            {$sourceNoNumber[$i] = substring($sources[$i], 1, $lastLetter+1 );}
+            else
+            {$sourceNoNumber[$i] = "";}
+        }
+
+        int $sizeNo = size( $sourceNoNumber );
+
+        string $identicals[] = {};
+        int $startIndex = -1;
+        int $endIndex = -1;
+        int $start = 0;
+
+ int $m=0;
+
+        // Find groups of nodes with identical name
+        // and resort them.
+        //
+        while( $start<$sizeNo )
+        {
+
+if( $m>1000 )
+{break;}
+$m++;
+
+            // We found the first two nodes of
+            // a group with identical node names.
+            //
+            if( $sourceNoNumber[$start]!="" &&
+                $sourceNoNumber[$start]==$sourceNoNumber[$start+1] )
+            {
+
+                $identicals[size($identicals)] = $sources[$start];
+                $startIndex = $start;
+
+                // Check for further nodes with identical node
+                // name in this group.
+                //
+                for( $i=$start+1; $i<$sizeNo; $i++ )
+                {
+                    if( $sourceNoNumber[$i]==$sourceNoNumber[$i-1] )
+                    {
+                        $identicals[size($identicals)] = $sources[$i];
+
+                        if( $i==$sizeNo-1 )
+                        {$endIndex = $i;}
+                    }
+                    else
+                    {
+                        $endIndex = $i-1;
+                        break;
+                    }
+                }
+
+                // invert the node name
+                //
+                string $tmp0[] = {};
+                for( $i=0; $i<size($identicals); $i++ )
+                {
+                    if( $identicals[$i]!="" )
+                    {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $identicals[$i] );}
+                }
+
+                // sort
+                //
+                if( !sciSortStringArrayAscendingBasedOnFrontNumber($tmp0) )
+                {return false;}
+
+                // invert back
+                //
+                for( $i=0; $i<size($tmp0); $i++ )
+                {
+                    if( $tmp0[$i]!="" )
+                    {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $tmp0[$i] );}
+                }
+
+                $identicals = $tmp0;
+
+                // Put the rearranged data back into '$sources'.
+                //
+                for( $i=0; $i<size($identicals); $i++ )
+                {$sources[$i+$start] = $identicals[$i];}
+
+                $start = $endIndex+1;
+            }
+            else
+            {$start++;}
+        }
+    }
+
+    // Sort the array : last character.
+    //
+    else if( $location==2 )
+    {
+        // We want the array with the inverted node name.
+        //
+        string $tmp0[] = {};
+        for( $i=0; $i<size($sources); $i++ )
+        {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $sources[$i] );}
+
+        // Sort the inverted node names.
+        //
+        $tmp0 = sort( $tmp0 );
+
+        // We want to invert the node name back.
+        //
+        for( $i=0; $i<size($tmp0); $i++ )
+        {$tmp0[$i] = sciInvertStringKeepNumberOrientation( $tmp0[$i] );}
+
+        $sources = $tmp0;
+    }
+
+    return true;
+}
+
+//_______________________________________________________
+//
+//
+global proc sciDoReorderMultiInputsAction(  string $location,
+                                            string $characterDirection,
+                                            string $numberDirection,
+                                            string $symbolPreference,
+                                            string $destination,
+                                            int $accountForObjectSets )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciDoReorderMultiInputsAction' :";
+
+    string $attrs[] = {};
+    string $node = plugNode( $destination );
+
+    $attrs[0] = plugAttr( $destination );
+
+    if( $accountForObjectSets==true )
+    {
+        if( $attrs[0]=="dagSetMembers" )
+        {$attrs[1] = "dnSetMembers";}
+        else if( $attrs[0]=="dnSetMembers" )
+        {$attrs[1] = "dagSetMembers";}
+    }
+
+    // We might have more than one attribute.
+    //
+    for( $attr in $attrs )
+    {
+        // Get all input nodes and delete all destination elements.
+        //
+        string $sources[] = {};
+        string $nodeAttr = $node+"."+$attr;
+
+print( $sn+" name = "+$nodeAttr+"\n" );
+
+        int $indices[] = getAttr( "-multiIndices", $nodeAttr );
+
+        for( $i=0; $i<size($indices); $i++ )
+        {
+            string $tmp = "";
+            if( !catch( $tmp = connectionInfo( "-sourceFromDestination",
+                                          $nodeAttr+"["+$indices[$i]+"]" ) ) )
+            {$sources[size($sources)] = $tmp;}
+
+
+            removeMultiInstance( "-b", true, $nodeAttr+"["+$indices[$i]+"]" );
+       }
+
+        // Create array without attributes.
+        //
+        string $tmp[] = {};
+        for( $i=0; $i<size($sources); $i++ )
+        {$tmp[$i] = plugNode( $sources[$i] );}
+
+
+        string $characters[] = {};
+        string $numbers[] = {};
+
+        // We want to treat nodes with numbers in their name
+        // differently to nodes without numbers.
+        // The numbers may be :
+        // 1. after the first character
+        // 2. at the end of the node name
+        //
+        sciSplitCharactersAndNumbers(   $tmp,
+                                        $characters,
+                                        $numbers,
+                                        $location );
+
+        // location based sorting : ascending
+        //
+        if(! sciSortCharactersLocationBased( $characters, $location ) )
+        {return;}
+
+        // We need to extra sort numbers.
+        // When they grow above 9, Maya sorts
+        // them wrongly.
+        //
+        // ascending
+        //
+        if( !sciSortNumbersLocationBased( $numbers, $location ) )
+        {return;}
+
+
+        // direction based sorting
+        //
+        // We want descending instead of ascending
+        //
+        if( $characterDirection==2 )
+        {$characters = sciInvertStringArray( $characters );}
+
+        if( $numberDirection==2 )
+        {$numbers = sciInvertStringArray( $numbers );}
+
+        // Put the attributes back to the nodes.
+        //
+        string $tmpCharacters[] = $characters;
+        string $tmpNumbers[] = $numbers;
+
+        for( $i=0; $i<size($tmpCharacters); $i++ )
+        {
+            for( $k=0; $k<size($sources); $k++ )
+            {
+                if( $tmpCharacters[$i]==plugNode($sources[$k]) )
+                {
+                    $tmpCharacters[$i] = $sources[$k];
+                    break;
+                }
+            }
+        }
+
+        $characters = $tmpCharacters;
+
+print( $sn+" characters plus attributes :\n" );
+print( $characters );
+
+        for( $i=0; $i<size($tmpNumbers); $i++ )
+        {
+            for( $k=0; $k<size($sources); $k++ )
+            {
+                if( $tmpNumbers[$i]==plugNode($sources[$k]) )
+                {
+                    $tmpNumbers[$i] = $sources[$k];
+                    break;
+                }
+            }
+        }
+
+        $numbers = $tmpNumbers;
+
+print( $sn+" numbers plus attributes :\n" );
+print( $numbers );
+
+        // Reconnect the input nodes with the desired ordering.
+        // numbers or characters first
+        //
+        int $numberSize = size( $numbers );
+        int $letterSize = size( $characters );
+        int $fullSize = $numberSize + $letterSize;
+
+        // numbers first
+        //
+        if( $symbolPreference==1 )
+        {
+            for( $i=0; $i<$numberSize; $i++ )
+            {connectAttr( "-f", $numbers[$i], $nodeAttr+"["+$i+"]" );}
+
+            for( $i=0; $i<$letterSize; $i++ )
+            {
+                connectAttr( "-f", $characters[$i], $nodeAttr+"["+($i+$numberSize)+"]" );
+print( "connectAttr( \"-f\", "+$characters[$i]+", "+($nodeAttr+"["+($i+$numberSize)+"]")+"\n" );
+            }
+        }
+
+        // characters first
+        //
+        else if( $symbolPreference==2 )
+        {
+            for( $i=0; $i<$letterSize; $i++ )
+            {connectAttr( "-f", $characters[$i], $nodeAttr+"["+$i+"]" );}
+
+            for( $i=0; $i<$numberSize; $i++ )
+            {connectAttr( "-f", $numbers[$i], $nodeAttr+"["+($i+$letterSize)+"]" );}
+        }
+    }
+}
+
+//_______________________________________________________
+//
+//
+global proc sciGetDestinationMultiAttributes( string $destinationWithMulti[] )
+{
+    string $sn = " // sciloop message : mel :"+
+                " 'sciGetDestinationMultiAttributes' :";
+
+    string $sel[] = ls( "-l", "-sl" );
+
+    if( size($sel)!=2 )
+    {
+        print( $sn+" select a input node and"+
+                " the node with input multi attribute.\n" );
+        return;
+    }
+
+   // We want all destination nodes with array input
+    // from the first selected node.
+    //
+    for( $k=0; $k<2; $k++ )
+    {
+        string $destinations0[] = listConnections(  "-p",  true,
+                                                    "-d",  true,
+                                                    "-s",  false,
+                                                    "-c",  false,
+                                                    "-sh", true,
+                                                    $sel[$k] );
+
+        for( $i=0; $i<size($destinations0); $i++ )
+        {
+            string $tmp[] = ls( "-l", $destinations0[$i] );
+            $destinations0[$i] = $tmp[0];
+            string $destinatioNode = plugNode( $destinations0[$i] );
+
+            string $buffer0[] = {};
+            int $numTokens0 = tokenize( $destinations0[$i], ".", $buffer0 );
+            string $lastAttr = $buffer0[$numTokens0-1];
+
+            string $buffer1[] = {};
+            int $numTokens1 = tokenize( $lastAttr, "[", $buffer1 );
+
+            // If its a multi and we have our two selected nodes,
+            // save the multi destination.
+            //
+            if( $numTokens1>1 )
+            {
+                string $source = connectionInfo(    "-sourceFromDestination",
+                                                    $destinations0[$i] );
+
+                string $tmp[] = ls( "-l", $source );
+                $source = $tmp[0];
+                string $sourceNode = plugNode( $source );
+
+                if( ($destinatioNode==$sel[0] && $sourceNode==$sel[1]) ||
+                    ($destinatioNode==$sel[1] && $sourceNode==$sel[0]) )
+                {
+                    $destinationWithMulti[size($destinationWithMulti)] =
+                                                    $destinatioNode+"."+$buffer1[0];
+                }
+            }
+        }
+    }
+
+    // We want to remove multiple occurrences.
+    //
+    int $removeIndex[] = {};
+
+    for( $i=0; $i<size($destinationWithMulti); $i++ )
+    {
+        for( $k=$i+1; $k<size($destinationWithMulti); $k++ )
+        {
+            if( $destinationWithMulti[$i]==$destinationWithMulti[$k] )
+            {$removeIndex[size($removeIndex)] = $i;}
+
+        }
+    }
+
+    for( $i=size($removeIndex)-1; $i>=0; $i-- )
+    {
+        if( catch( stringArrayRemove( $removeIndex[$i], $destinationWithMulti ) ) )
+        {
+            print( $sn+" error stringArrayRemove, index is :"+$removeIndex[$i]+"\n" );
+            print( $sn+" destinationWithMulti :\n" );
+            print( $destinationWithMulti );
+        }
+    }
+}
+
+//_______________________________________________________
+//
+//
+global proc sciDoReorderMultiAttributes()
+{
+    string $sn = " // sciloop message : mel :"+
+                    " 'sciDoReorderMultiAttributes' :";
+
+    // Get all input multi attributes of the nodes
+    // in the selection.
+    //
+    string $destinationWithMulti[] = {};
+    sciGetDestinationMultiAttributes( $destinationWithMulti );
+
+    // Get the interface values.
+    //
+    int $location = radioButtonGrp( "-q",
+                "-select",
+                 "sciReorderMultiInputsReorderLocation_radioButtonGrp" );
+
+    int $characterDirection = radioButtonGrp( "-q",
+                "-select",
+                "sciReorderMultiInputsReorderCharacterDirection_radioButtonGrp" );
+
+    int $numberDirection = radioButtonGrp( "-q",
+                "-select",
+                "sciReorderMultiInputsReorderNumberDirection_radioButtonGrp" );
+
+    int $symbolPreference = radioButtonGrp( "-q",
+                "-select",
+                "sciReorderMultiInputsReorderSymbolPreference_radioButtonGrp" );
+
+    int $accountForObjectSets = checkBox( "-q",
+                "-value",
+                "sciReorderMultiInputsObjectSet_checkBox" );
+
+    for( $destination in $destinationWithMulti )
+    {
+        sciDoReorderMultiInputsAction(  $location,
+                                        $characterDirection,
+                                        $numberDirection,
+                                        $symbolPreference,
+                                        $destination,
+                                        $accountForObjectSets );
+    }
+}
+
+//____________________________________________________________________________
+//
+//
+global proc sciReorderMultiInputs()
+{
+    string $sn = " // sciloop message : mel : 'sciReorderMultiInputs'";
+
+    string $sciReorderWindow = "sciReorderMultiInputsWindow";
+
+    if( window( "-exists", $sciReorderWindow ) )
+    {deleteUI $sciReorderWindow;}
+
+
+    window( "-t", "reorder input nodes of multiAttributes",
+            "-wh",              300, 300,
+            "-minimizeButton",  true,
+            "-maximizeButton",  false,
+            "-rtf",             true,
+            $sciReorderWindow );
+
+    scrollLayout(   "-horizontalScrollBarThickness", 0,
+                    "-verticalScrollBarThickness",   16 );
+
+
+    columnLayout(   "-adjustableColumn", true,
+                    "-cal",            "right",
+                    "-cat",            "both", 20,
+                    "sciReorderMultiInputs_columnLayout" );
+
+        separator( "-height", 20, "-st", "none" );
+
+        text(   "-fn", "boldLabelFont",
+                "select one input node and the node with the multi attribute" );
+
+        separator( "-height", 20, "-st", "single" );
+
+        //
+        radioButtonGrp( "-columnAttach", 1, "left", 0,
+                        "-columnWidth",  1, 125,
+                        "-vertical",
+                        "-numberOfRadioButtons",   2,
+                        "-select",                 1,
+                        "-label",              "reorderLocation",
+                        "-labelArray2",        "first letter", "lastLetter",
+                        "sciReorderMultiInputsReorderLocation_radioButtonGrp" );
+
+        separator( "-height", 20, "-st", "single" );
+
+        //
+        radioButtonGrp( "-columnAttach", 1, "left", 0,
+                        "-columnWidth",  1, 125,
+                        "-vertical",
+                        "-numberOfRadioButtons", 2,
+                        "-select",               1,
+                        "-label",              "characterReorderDirection",
+                        "-labelArray2",        "ascending", "descending",
+                        "sciReorderMultiInputsReorderCharacterDirection_radioButtonGrp" );
+
+        //
+        radioButtonGrp( "-columnAttach", 1, "left", 0,
+                        "-columnWidth",  1, 125,
+                        "-vertical",
+                        "-numberOfRadioButtons", 2,
+                        "-select",               1,
+                        "-label",              "numberReorderDirection",
+                        "-labelArray2",        "ascending", "descending",
+                        "sciReorderMultiInputsReorderNumberDirection_radioButtonGrp" );
+
+
+
+        separator( "-height", 20, "-st", "single" );
+
+
+        //
+        radioButtonGrp( "-columnAttach", 1, "left", 0,
+                        "-columnWidth",  1, 125,
+                        "-vertical",
+                        "-numberOfRadioButtons", 2,
+                        "-select",               1,
+                        "-label",              "symbolPreference",
+                        "-labelArray2",        "numbers before letters", "lettersBeforeNumbers",
+                        "sciReorderMultiInputsReorderSymbolPreference_radioButtonGrp" );
+
+        separator( "-height", 20, "-st", "single" );
+
+        checkBox(   "-label", "account for 'objectSets'",
+                    "-value", 1,
+                    "sciReorderMultiInputsObjectSet_checkBox" );
+
+
+        separator( "-height", 60, "-st", "single" );
+
+        button
+        -l  ( "reorder" )
+        -c  ( "sciDoReorderMultiAttributes();" )
+        -align "center"
+        "sciReorderMultiInputs_button";
+
+        separator( "-height", 20, "-st", "none" );
+
+        window( "-e",
+                "-wh", 400, 400,
+                $sciReorderWindow );
+
+        showWindow( $sciReorderWindow );
+}
+
+//_______________________________________________________
+//
+//
