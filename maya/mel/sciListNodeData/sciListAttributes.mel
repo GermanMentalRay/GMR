@@ -115,7 +115,7 @@ proc string sciGetAttrVal(  string $type,
     {
         int $valueInt[] = {};
 
-        if( catchQuiet( $valueIntFloat = getAttr( $fullName ) ) )
+        if( catchQuiet( $valueInt = getAttr( $fullName ) ) )
         {$value = "error retrieving int value for : "+$fullName;}
         else
         {
