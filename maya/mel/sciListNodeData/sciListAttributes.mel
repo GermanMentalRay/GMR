@@ -1,7 +1,7 @@
 //
 // creator : sciloop
 //
-// last update: 2014_08_17
+// last update: 2014_09_16
 //
 // Display all attributes,their values, types and whether they
 // are multi/parent/child in the script editor.
@@ -139,18 +139,18 @@ proc string sciGetAttrVal(  string $type,
     //
     else if( $type=="stringArray" || $type=="componentList" )
     {
-        string $valueString[] = {};
-        if( catchQuiet( $valueString = getAttr( $fullName ) ) )
+        string $valueStringArray[] = {};
+        if( catchQuiet( $valueStringArray = getAttr( $fullName ) ) )
         {$value = "not displayable for type : "+$type;}
         else
         {
-            int $size = size( $valueString );
+            int $size = size( $valueStringArray );
 
-            $value = "size: "+$size+"  values: ";
+            $value = "size: "+$size+"  stringArray values: ";
 
             for( $i=0; $i<$size; $i++ )
             {
-                $value += $valueString[$i]+" ";
+                $value += $valueStringArray[$i]+" ";
                 if( $i==9 )
                 {
                     $value += ". . .";
@@ -164,22 +164,26 @@ proc string sciGetAttrVal(  string $type,
     //
     else
     {
+        string $valueStringArray[] = {};
+        int $valueIntArray[] = {};
+        float $valueFloatArray[] = {};
+
         if( catchQuiet( getAttr( $fullName ) ) )
         {$value = "not displayable for type : "+$type;}
         else
         {
-            if( !catchQuiet( $valueString = getAttr( $fullName ) ) )
+            if( !catchQuiet( $valueStringArray = getAttr( $fullName ) ) )
             {
                 int $size = 0;
-                if( catchQuiet( $size = size( $valueString ) ) )
-                {$value = $valueString;}
+                if( catchQuiet( $size = size( $valueStringArray ) ) )
+                {}
                 else
                 {
-                    $value = "size: "+$size+"  values: ";
+                    $value = "size: "+$size+"  stringArray values: ";
 
                     for( $i=0; $i<$size; $i++ )
                     {
-                        $value += $valueString[$i]+" ";
+                        $value += $valueStringArray[$i]+" ";
                         if( $i==9 )
                         {
                             $value += ". . .";
@@ -188,6 +192,48 @@ proc string sciGetAttrVal(  string $type,
                     }
                 }
             }
+            else if( !catchQuiet( $valueIntArray = getAttr( $fullName ) ) )
+            {
+                int $size = 0;
+                if( catchQuiet( $size = size( $valueIntArray ) ) )
+                {}
+                else
+                {
+                    $value = "size: "+$size+"  intArray values: ";
+
+                    for( $i=0; $i<$size; $i++ )
+                    {
+                        $value += $valueIntArray[$i]+" ";
+                        if( $i==9 )
+                        {
+                            $value += ". . .";
+                            break;
+                        }
+                    }
+                }
+            }
+            else if( !catchQuiet( $valueFloatArray = getAttr( $fullName ) ) )
+            {
+                int $size = 0;
+                if( catchQuiet( $size = size( $valueFloatArray ) ) )
+                {}
+                else
+                {
+                    $value = "size: "+$size+"  floatArray values: ";
+
+                    for( $i=0; $i<$size; $i++ )
+                    {
+                        $value += $valueFloatArray[$i]+" ";
+                        if( $i==9 )
+                        {
+                            $value += ". . .";
+                            break;
+                        }
+                    }
+                }
+            }
+            else if( !catchQuiet( $value = getAttr( $fullName ) ) )
+            {}
             else
             {$value = "not displayable for type : "+$type;}
         }
@@ -534,4 +580,5 @@ global proc sciListAttributes( string $sel[] )
 }
 
 //________________________________________________________________________
+//
 //
